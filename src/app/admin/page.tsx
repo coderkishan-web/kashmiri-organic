@@ -1,0 +1,2302 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { 
+  ShieldCheck, FileText, Inbox, BookOpen, Settings, LogOut, Search, Plus, Trash2, 
+  Edit3, CheckCircle, RefreshCw, X, Loader2, Sparkles, AlertCircle, Calendar, Tag, ShieldAlert, Sprout
+} from 'lucide-react';
+
+export default function AdminDashboardPage() {
+  const router = useRouter();
+  
+  // Auth state
+  const [adminUser, setAdminUser] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
+
+  // Tab State: 'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types'
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types'>('inquiries');
+
+  // Database lists
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
+
+  // Loading & Error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals & Active Edit Entities
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<number[]>([]);
+  const [benefits, setBenefits] = useState<any[]>([]);
+  const [usageTypes, setUsageTypes] = useState<any[]>([]);
+  const [selectedBenefitIds, setSelectedBenefitIds] = useState<number[]>([]);
+  const [selectedUsageTypeIds, setSelectedUsageTypeIds] = useState<number[]>([]);
+  // Custom per-product descriptions for each selected benefit/usage type
+  const [benefitCustomDescs, setBenefitCustomDescs] = useState<Record<number, string>>({});
+  const [usageTypeCustomDescs, setUsageTypeCustomDescs] = useState<Record<number, string>>({});
+  
+  const [selectedBlogProductIds, setSelectedBlogProductIds] = useState<number[]>([]);
+  const [selectedBlogMaterialIds, setSelectedBlogMaterialIds] = useState<number[]>([]);
+  
+  const [showBlogModal, setShowBlogModal] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<any>(null);
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<any>(null);
+
+  const [showBenefitModal, setShowBenefitModal] = useState(false);
+  const [editingBenefit, setEditingBenefit] = useState<any>(null);
+
+  const [showUsageTypeModal, setShowUsageTypeModal] = useState(false);
+  const [editingUsageType, setEditingUsageType] = useState<any>(null);
+
+  const [viewingInquiry, setViewingInquiry] = useState<any>(null);
+
+  // 1. Verify Authentication & Fetch Initial Data
+  useEffect(() => {
+    fetch('/api/admin/me')
+      .then((res) => {
+        if (!res.ok) {
+          router.push('/admin/login');
+        } else {
+          return res.json();
+        }
+      })
+      .then((data) => {
+        if (data?.authenticated) {
+          setAdminUser(data.user);
+          fetchDashboardData();
+        }
+      })
+      .catch(() => {
+        router.push('/admin/login');
+      })
+      .finally(() => {
+        setIsVerifying(false);
+      });
+  }, [router]);
+
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    setActionError('');
+    try {
+      // Fetch inquiries
+      const inqRes = await fetch('/api/admin/inquiries');
+      if (inqRes.ok) {
+        const data = await inqRes.json();
+        setInquiries(data.inquiries || []);
+      }
+
+      // Fetch products
+      const prodRes = await fetch('/api/admin/products');
+      if (prodRes.ok) {
+        const data = await prodRes.json();
+        setProducts(data.products || []);
+        setBenefits(data.benefits || []);
+        setUsageTypes(data.usage_types || []);
+      }
+
+      // Fetch blogs
+      const blogRes = await fetch('/api/admin/blogs');
+      if (blogRes.ok) {
+        const data = await blogRes.json();
+        setBlogs(data.blogs || []);
+      }
+
+      // Fetch categories
+      const catRes = await fetch('/api/admin/categories');
+      if (catRes.ok) {
+        const data = await catRes.json();
+        setCategories(data.categories || []);
+      }
+
+      // Fetch materials
+      const matRes = await fetch('/api/admin/materials');
+      if (matRes.ok) {
+        const data = await matRes.json();
+        setMaterials(data.materials || []);
+      }
+    } catch (err) {
+      setActionError('Failed to fetch organic records.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. Auth Actions (Logout)
+  const handleLogout = async () => {
+    if (confirm('Verify: Do you wish to lock the valley archives and logout?')) {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      router.push('/admin/login');
+    }
+  };
+
+  // 3. Inquiry CRUD actions
+  const handleUpdateInquiryStatus = async (id: number, status: string) => {
+    setActionError('');
+    try {
+      const res = await fetch('/api/admin/inquiries', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        setInquiries(prev => prev.map(inq => inq.id === id ? { ...inq, status } : inq));
+        if (viewingInquiry?.id === id) {
+          setViewingInquiry((prev: any) => ({ ...prev, status }));
+        }
+      } else {
+        const data = await res.json();
+        throw new Error(data.error || 'Update failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to update status.');
+    }
+  };
+
+  const handleDeleteInquiry = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to delete this B2B inquiry record?')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/inquiries?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setInquiries(prev => prev.filter(inq => inq.id !== id));
+        setViewingInquiry(null);
+      } else {
+        throw new Error('Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to remove inquiry.');
+    }
+  };
+
+  // CRUD submits for Benefits
+  const handleBenefitSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      description: formData.get('description'),
+    };
+
+    try {
+      let res;
+      if (editingBenefit) {
+        data.id = editingBenefit.id;
+        res = await fetch('/api/admin/benefits', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        res = await fetch('/api/admin/benefits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowBenefitModal(false);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to save benefit specifications.');
+      }
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteBenefit = async (id: number) => {
+    setActionError('');
+    // Optimistic remove
+    const prev = [...benefits];
+    setBenefits(b => b.filter(x => x.id !== id));
+    try {
+      const res = await fetch(`/api/admin/benefits?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        setBenefits(prev); // restore on failure
+        const d = await res.json().catch(() => ({}));
+        setActionError(d.error || 'Failed to delete benefit.');
+      }
+    } catch (err: any) {
+      setBenefits(prev);
+      setActionError(err.message || 'Network error.');
+    }
+  };
+
+  // CRUD submits for Usage Types (Recommended Applications)
+  const handleUsageTypeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      description: formData.get('description'),
+    };
+
+    try {
+      let res;
+      if (editingUsageType) {
+        data.id = editingUsageType.id;
+        res = await fetch('/api/admin/usage_types', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        res = await fetch('/api/admin/usage_types', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowUsageTypeModal(false);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to save application specifications.');
+      }
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUsageType = async (id: number) => {
+    setActionError('');
+    // Optimistic remove
+    const prev = [...usageTypes];
+    setUsageTypes(u => u.filter(x => x.id !== id));
+    try {
+      const res = await fetch(`/api/admin/usage_types?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        setUsageTypes(prev); // restore on failure
+        const d = await res.json().catch(() => ({}));
+        setActionError(d.error || 'Failed to delete application.');
+      }
+    } catch (err: any) {
+      setUsageTypes(prev);
+      setActionError(err.message || 'Network error.');
+    }
+  };
+
+  // 4. Products CRUD Form submits
+  const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      sku: formData.get('sku'),
+      price: formData.get('price'),
+      moq: formData.get('moq'),
+      stock: formData.get('stock'),
+      short_description: formData.get('short_description'),
+      long_description: formData.get('long_description'),
+      packaging: formData.get('packaging'),
+      shipping: formData.get('shipping'),
+      availability: formData.get('availability'),
+      certified: formData.get('certified') === 'on',
+      export_quality: formData.get('export_quality') === 'on',
+      image_url: formData.get('image_url'),
+      category_ids: selectedCategoryIds,
+      material_ids: selectedMaterialIds,
+      benefit_ids: selectedBenefitIds,
+      usage_type_ids: selectedUsageTypeIds,
+      benefit_custom_descriptions: benefitCustomDescs,
+      usage_type_custom_descriptions: usageTypeCustomDescs,
+      sub_category: formData.get('sub_category')
+    };
+
+    try {
+      let res;
+      if (editingProduct) {
+        // Edit update
+        data.id = editingProduct.id;
+        res = await fetch('/api/admin/products', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        // Create new
+        res = await fetch('/api/admin/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowProductModal(false);
+        setEditingProduct(null);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Transaction rejected.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Operation failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to delete this product from the public catalog?')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/products?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setProducts(prev => prev.filter(p => p.id !== id));
+      } else {
+        throw new Error('Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete product.');
+    }
+  };
+
+  // 5. Blogs CRUD Form submits
+  const handleBlogSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      title: formData.get('title'),
+      slug: formData.get('slug'),
+      author: formData.get('author'),
+      category: formData.get('category'),
+      tags: formData.get('tags'),
+      status: formData.get('status'),
+      content: formData.get('content'),
+      seo_description: formData.get('seo_description'),
+      featured_image: formData.get('featured_image'),
+      related_products: JSON.stringify(selectedBlogProductIds),
+      related_materials: JSON.stringify(selectedBlogMaterialIds)
+    };
+
+    try {
+      let res;
+      if (editingBlog) {
+        // Edit update
+        data.id = editingBlog.id;
+        res = await fetch('/api/admin/blogs', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        // Create new
+        res = await fetch('/api/admin/blogs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowBlogModal(false);
+        setEditingBlog(null);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Transaction rejected.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Operation failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteBlog = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to delete this diary log?')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/blogs?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setBlogs(prev => prev.filter(b => b.id !== id));
+      } else {
+        throw new Error('Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to remove blog.');
+    }
+  };
+
+  const handleCategorySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      description: formData.get('description'),
+      image_url: formData.get('image_url')
+    };
+
+    try {
+      let res;
+      if (editingCategory) {
+        data.id = editingCategory.id;
+        res = await fetch('/api/admin/categories', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowCategoryModal(false);
+        setEditingCategory(null);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Transaction rejected.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Operation failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to delete this category? Products linked to it will remain, but this category will be deleted.')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/categories?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setCategories(prev => prev.filter(c => c.id !== id));
+        fetchDashboardData();
+      } else {
+        throw new Error('Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete category.');
+    }
+  };
+
+  const handleMaterialSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      name: formData.get('name'),
+      slug: formData.get('slug'),
+      overview: formData.get('overview'),
+      origin: formData.get('origin'),
+      manufacturing_process: formData.get('manufacturing_process'),
+      sustainability: formData.get('sustainability'),
+      benefits: formData.get('benefits'),
+      image_url: formData.get('image_url'),
+      history: formData.get('history'),
+      gallery_urls: formData.get('gallery_urls')
+    };
+
+    try {
+      let res;
+      if (editingMaterial) {
+        data.id = editingMaterial.id;
+        res = await fetch('/api/admin/materials', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        res = await fetch('/api/admin/materials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowMaterialModal(false);
+        setEditingMaterial(null);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Transaction rejected.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Operation failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to delete this harvest material? Products linked to it will remain, but this material metadata will be deleted.')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/materials?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMaterials(prev => prev.filter(m => m.id !== id));
+        fetchDashboardData();
+      } else {
+        throw new Error('Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete material.');
+    }
+  };
+
+  // Helper filters based on query
+  const query = searchQuery.toLowerCase();
+
+  const filteredMaterials = materials.filter(
+    (m) =>
+      m.name.toLowerCase().includes(query) ||
+      m.slug.toLowerCase().includes(query) ||
+      (m.overview || '').toLowerCase().includes(query)
+  );
+  
+  const filteredInquiries = inquiries.filter(
+    (i) =>
+      i.name.toLowerCase().includes(query) ||
+      i.email.toLowerCase().includes(query) ||
+      i.message.toLowerCase().includes(query)
+  );
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(query) ||
+      p.sku.toLowerCase().includes(query) ||
+      p.short_description.toLowerCase().includes(query)
+  );
+
+  const filteredBlogs = blogs.filter(
+    (b) =>
+      b.title.toLowerCase().includes(query) ||
+      b.author.toLowerCase().includes(query) ||
+      b.category.toLowerCase().includes(query)
+  );
+
+  const filteredCategories = categories.filter(
+    (c) =>
+      c.name.toLowerCase().includes(query) ||
+      c.slug.toLowerCase().includes(query) ||
+      (c.description || '').toLowerCase().includes(query)
+  );
+
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen bg-brand-green flex items-center justify-center text-bg-cream gap-2">
+        <Loader2 className="w-6 h-6 animate-spin text-brand-gold" />
+        <span>Authenticating with Valley Archives...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex bg-brand-green text-bg-cream/90 font-light">
+      
+      {/* A. Sidebar Navigation */}
+      <aside className="w-64 bg-brand-green border-r border-bg-beige/10 p-6 flex flex-col justify-between shrink-0 h-screen sticky top-0">
+        <div className="flex flex-col gap-8">
+          
+          {/* Logo brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-brand-green font-bold shadow">
+              KO
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-bg-cream leading-tight">Archives</h3>
+              <span className="text-[9px] uppercase font-bold text-brand-gold tracking-widest block">Kashmiri Organic</span>
+            </div>
+          </div>
+          
+          <div className="w-full h-px bg-bg-beige/10"></div>
+          
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-2">
+            <button
+              onClick={() => { setActiveTab('inquiries'); setViewingInquiry(null); }}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'inquiries' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <Inbox className="w-4 h-4 shrink-0" />
+              <span>B2B Inquiries</span>
+              {inquiries.filter(i => i.status === 'new').length > 0 && (
+                <span className="ml-auto bg-red-600 text-bg-cream text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                  {inquiries.filter(i => i.status === 'new').length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'products' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <Settings className="w-4 h-4 shrink-0" />
+              <span>Catalog CRUD</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('blogs')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'blogs' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <BookOpen className="w-4 h-4 shrink-0" />
+              <span>Harvest Diaries</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'categories' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <Tag className="w-4 h-4 shrink-0" />
+              <span>Categories</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('materials')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'materials' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <Sprout className="w-4 h-4 shrink-0" />
+              <span>Harvest Materials</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('benefits')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'benefits' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span>Wellness Benefits</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('usage_types')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'usage_types' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>Usage Applications</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* User logout section */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center font-serif text-sm font-bold text-brand-gold">
+              {adminUser?.name?.[0]}
+            </div>
+            <div>
+              <h5 className="text-xs font-bold text-bg-cream">{adminUser?.name}</h5>
+              <span className="text-[9px] text-bg-cream/50 uppercase tracking-widest">{adminUser?.role} panel</span>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full bg-bg-beige/5 hover:bg-red-950/20 hover:text-red-200 border border-bg-beige/10 py-2.5 rounded-xl text-[10px] uppercase font-bold tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Logout Gate
+          </button>
+        </div>
+
+      </aside>
+
+      {/* B. Main Control Panel Area */}
+      <main className="flex-grow p-8 sm:p-10 flex flex-col gap-8 h-screen overflow-y-auto w-full max-w-[calc(100vw-256px)] bg-brand-green/98">
+        
+        {/* Header row */}
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4 text-brand-gold" /> Valley Administrative Center
+            </span>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-bg-cream leading-tight">
+              {activeTab === 'inquiries' && 'B2B Sourcing Requests'}
+              {activeTab === 'products' && 'Organic Product Catalog'}
+              {activeTab === 'blogs' && 'Agricultural Diary Logs'}
+              {activeTab === 'categories' && 'Dynamic Category Archives'}
+              {activeTab === 'materials' && 'Harvest Materials Catalog'}
+              {activeTab === 'benefits' && 'Wellness Benefits Library'}
+              {activeTab === 'usage_types' && 'Recommended Applications'}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Quick Search inside panel */}
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${activeTab}...`}
+                className="bg-bg-cream/10 text-xs text-bg-cream placeholder-bg-cream/30 pl-8 pr-4 py-2 rounded-xl border border-bg-beige/10 focus:outline-none focus:border-brand-gold w-48 sm:w-60 focus:ring-1 focus:ring-brand-gold"
+              />
+              <Search className="w-4 h-4 text-bg-cream/30 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            </div>
+
+            {/* Refresh action */}
+            <button
+              onClick={fetchDashboardData}
+              disabled={isLoading}
+              className="bg-bg-beige/5 hover:bg-bg-beige/10 border border-bg-beige/10 p-2 rounded-xl cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 text-brand-gold ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            {/* Create Actions */}
+            {activeTab === 'products' && (
+              <button
+                onClick={() => { setEditingProduct(null); setSelectedCategoryIds([]); setSelectedMaterialIds([]); setSelectedBenefitIds([]); setSelectedUsageTypeIds([]); setBenefitCustomDescs({}); setUsageTypeCustomDescs({}); setShowProductModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Product
+              </button>
+            )}
+
+            {activeTab === 'blogs' && (
+              <button
+                onClick={() => { setEditingBlog(null); setSelectedBlogProductIds([]); setSelectedBlogMaterialIds([]); setShowBlogModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Diary Log
+              </button>
+            )}
+
+            {activeTab === 'categories' && (
+              <button
+                onClick={() => { setEditingCategory(null); setShowCategoryModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Category
+              </button>
+            )}
+
+            {activeTab === 'materials' && (
+              <button
+                onClick={() => { setEditingMaterial(null); setShowMaterialModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Material
+              </button>
+            )}
+
+            {activeTab === 'benefits' && (
+              <button
+                onClick={() => { setEditingBenefit(null); setShowBenefitModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Benefit
+              </button>
+            )}
+
+            {activeTab === 'usage_types' && (
+              <button
+                onClick={() => { setEditingUsageType(null); setShowUsageTypeModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Application
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Global Error Banner */}
+        {actionError && (
+          <div className="bg-red-950/40 border border-red-500/30 text-red-200 text-xs px-4 py-3 rounded-xl flex gap-2 items-center">
+            <ShieldAlert className="w-4 h-4 text-red-400" />
+            <span>{actionError}</span>
+          </div>
+        )}
+
+        {/* Dynamic content tables */}
+        <div className="flex-grow w-full">
+
+          {/* TAB 1: INQUIRIES VIEW */}
+          {activeTab === 'inquiries' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
+              
+              {/* Table list (Left) */}
+              <div className="lg:col-span-8 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+                <table className="w-full border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                      <th className="p-4 font-bold">Client Name</th>
+                      <th className="p-4 font-bold">Contact Info</th>
+                      <th className="p-4 font-bold">Inquiry Style</th>
+                      <th className="p-4 font-bold">Status Badge</th>
+                      <th className="p-4 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-bg-beige/10">
+                    {filteredInquiries.map((inq) => (
+                      <tr
+                        key={inq.id}
+                        onClick={() => setViewingInquiry(inq)}
+                        className={`hover:bg-bg-beige/5 cursor-pointer transition-colors ${
+                          viewingInquiry?.id === inq.id ? 'bg-bg-beige/5 border-l-2 border-brand-gold' : ''
+                        }`}
+                      >
+                        <td className="p-4 font-semibold text-bg-cream">{inq.name}</td>
+                        <td className="p-4 text-bg-cream/70 font-light">
+                          {inq.email} <br />
+                          {inq.phone}
+                        </td>
+                        <td className="p-4">
+                          <span className="bg-bg-beige/10 text-brand-gold text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                            {inq.inquiry_type}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          {inq.status === 'new' && (
+                            <span className="bg-red-950/60 text-red-200 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                              New Sourcing
+                            </span>
+                          )}
+                          {inq.status === 'reviewed' && (
+                            <span className="bg-yellow-950/60 text-yellow-200 border border-yellow-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                              Reviewed
+                            </span>
+                          )}
+                          {inq.status === 'replied' && (
+                            <span className="bg-green-950/60 text-green-200 border border-green-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                              Replied
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleDeleteInquiry(inq.id)}
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredInquiries.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-bg-cream/40">
+                          No inquiries matching filters are currently logged.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Inquiry Details Viewer (Right side) */}
+              <div className="lg:col-span-4 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl p-6 luxury-shadow flex flex-col gap-6 sticky top-24">
+                {viewingInquiry ? (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold">Inquiry Details</span>
+                        <h3 className="font-serif text-lg font-bold text-bg-cream mt-0.5">{viewingInquiry.name}</h3>
+                      </div>
+                      <button
+                        onClick={() => setViewingInquiry(null)}
+                        className="text-bg-cream/40 hover:text-bg-cream"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="border-t border-bg-beige/10 pt-4 text-xs flex flex-col gap-2 font-light text-bg-cream/70">
+                      <div>
+                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Corporate Entity</strong>
+                        <span className="text-bg-cream font-semibold">{viewingInquiry.company_name || 'Individual Sourcing'}</span>
+                      </div>
+                      <div>
+                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Email Sourcing</strong>
+                        <span className="text-bg-cream font-semibold">{viewingInquiry.email}</span>
+                      </div>
+                      <div>
+                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Phone / WhatsApp Routing</strong>
+                        <span className="text-bg-cream font-semibold">{viewingInquiry.phone}</span>
+                      </div>
+                      <div>
+                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Receipt Date</strong>
+                        <span>{new Date(viewingInquiry.created_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-bg-beige/10 pt-4">
+                      <strong className="text-brand-gold font-bold uppercase text-[9px] block mb-1">Corporate Specifications message</strong>
+                      <div className="bg-bg-beige/5 p-4 rounded-xl text-xs leading-relaxed font-light text-bg-cream/80 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                        {viewingInquiry.message}
+                      </div>
+                    </div>
+
+                    {/* Status updater row */}
+                    <div className="border-t border-bg-beige/10 pt-4 flex flex-col gap-2">
+                      <span className="text-[9px] uppercase font-bold text-brand-gold tracking-wider">Update status parameters</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'reviewed')}
+                          disabled={viewingInquiry.status === 'reviewed'}
+                          className="flex-1 bg-yellow-600/30 hover:bg-yellow-600 text-yellow-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
+                        >
+                          Mark Reviewed
+                        </button>
+                        <button
+                          onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'replied')}
+                          disabled={viewingInquiry.status === 'replied'}
+                          className="flex-1 bg-green-600/30 hover:bg-green-600 text-green-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
+                        >
+                          Mark Replied
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20 text-bg-cream/40 flex flex-col items-center gap-3">
+                    <Inbox className="w-8 h-8 text-brand-gold/40" />
+                    <p className="text-xs">Click any inquiry card row on the left to verify specifications details and coordinate communications.</p>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 2: PRODUCTS CRUD */}
+          {activeTab === 'products' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Product</th>
+                    <th className="p-4 font-bold">SKU Code</th>
+                    <th className="p-4 font-bold">MOQ Specifications</th>
+                    <th className="p-4 font-bold">Availability Size</th>
+                    <th className="p-4 font-bold">Seals</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredProducts.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-bg-beige/5 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded overflow-hidden shrink-0 border border-bg-beige/10 relative bg-bg-mist">
+                          <img
+                            src={prod.image_url}
+                            alt={prod.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-bg-cream">{prod.name}</h4>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-bg-cream/50 font-light">{prod.sku}</span>
+                            {prod.materials && prod.materials.length > 0 && (
+                              <>
+                                <span className="text-[10px] text-bg-cream/30">•</span>
+                                <span className="text-[9px] font-semibold text-brand-gold uppercase tracking-wider">
+                                  {prod.materials.map((m: any) => m.name).join(', ')}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 font-mono font-semibold text-brand-gold">{prod.slug}</td>
+                      <td className="p-4 text-bg-cream/80 font-light">{prod.moq}</td>
+                      <td className="p-4 capitalize text-bg-cream/70">{prod.availability.split(',').join(' / ')}</td>
+                      <td className="p-4">
+                        <div className="flex gap-1.5 flex-wrap">
+                          {prod.certified === 1 && (
+                            <span className="bg-green-950/60 text-green-200 border border-green-500/25 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">USDA</span>
+                          )}
+                          {prod.export_quality === 1 && (
+                            <span className="bg-brand-gold/15 text-brand-gold border border-brand-gold/30 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">EXPORT</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => {
+                            setEditingProduct(prod);
+                            setSelectedCategoryIds(prod.categories?.map((c: any) => c.id) || []);
+                            setSelectedMaterialIds(prod.materials?.map((m: any) => m.id) || []);
+                            setSelectedBenefitIds(prod.benefits?.map((b: any) => b.id) || []);
+                            setSelectedUsageTypeIds(prod.usage_types?.map((u: any) => u.id) || []);
+                            // Pre-populate custom descriptions from existing product data
+                            const bDescs: Record<number, string> = {};
+                            prod.benefits?.forEach((b: any) => { if (b.description) bDescs[b.id] = b.description; });
+                            setBenefitCustomDescs(bDescs);
+                            const uDescs: Record<number, string> = {};
+                            prod.usage_types?.forEach((u: any) => { if (u.description) uDescs[u.id] = u.description; });
+                            setUsageTypeCustomDescs(uDescs);
+                            setShowProductModal(true);
+                          }}
+                          className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(prod.id)}
+                          className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredProducts.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-bg-cream/40">
+                        No organic masterpieces matching filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 3: BLOGS CRUD */}
+          {activeTab === 'blogs' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Editorial Diary</th>
+                    <th className="p-4 font-bold">Author Badge</th>
+                    <th className="p-4 font-bold">Category</th>
+                    <th className="p-4 font-bold">Harvest Date</th>
+                    <th className="p-4 font-bold">Status</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredBlogs.map((blog) => (
+                    <tr key={blog.id} className="hover:bg-bg-beige/5 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded overflow-hidden shrink-0 border border-bg-beige/10 relative bg-bg-mist">
+                          <img
+                            src={blog.featured_image}
+                            alt={blog.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-bg-cream max-w-sm truncate">{blog.title}</h4>
+                          <span className="text-[10px] text-bg-cream/50 font-light">{blog.slug}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-bg-cream/80 font-light">{blog.author}</td>
+                      <td className="p-4 text-brand-gold font-semibold uppercase text-[10px] tracking-wider">{blog.category}</td>
+                      <td className="p-4 text-bg-cream/60">{blog.publish_date}</td>
+                      <td className="p-4">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                          blog.status === 'published' 
+                            ? 'bg-green-950/60 text-green-200 border-green-500/20' 
+                            : 'bg-yellow-950/60 text-yellow-200 border-yellow-500/20'
+                        }`}>
+                          {blog.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => { 
+                            setEditingBlog(blog); 
+                            let parsedProducts: number[] = [];
+                            let parsedMaterials: number[] = [];
+                            try { parsedProducts = JSON.parse(blog.related_products || '[]'); } catch (e) {}
+                            try { parsedMaterials = JSON.parse(blog.related_materials || '[]'); } catch (e) {}
+                            setSelectedBlogProductIds(parsedProducts);
+                            setSelectedBlogMaterialIds(parsedMaterials);
+                            setShowBlogModal(true); 
+                          }}
+                          className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(blog.id)}
+                          className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredBlogs.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-bg-cream/40">
+                        No chronicles matching filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 4: CATEGORIES CRUD */}
+          {activeTab === 'categories' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Category</th>
+                    <th className="p-4 font-bold">Web Path Slug</th>
+                    <th className="p-4 font-bold">Description</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredCategories.map((cat) => (
+                    <tr key={cat.id} className="hover:bg-bg-beige/5 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded overflow-hidden shrink-0 border border-bg-beige/10 relative bg-bg-mist">
+                          <img
+                            src={cat.image_url || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80'}
+                            alt={cat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-bg-cream">{cat.name}</h4>
+                        </div>
+                      </td>
+                      <td className="p-4 font-mono font-semibold text-brand-gold">{cat.slug}</td>
+                      <td className="p-4 text-bg-cream/80 font-light max-w-xs truncate">{cat.description}</td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => {
+                            setEditingCategory(cat);
+                            setShowCategoryModal(true);
+                          }}
+                          className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredCategories.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-bg-cream/40">
+                        No categories logged in the archives.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 5: HARVEST MATERIALS CRUD */}
+          {activeTab === 'materials' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Material</th>
+                    <th className="p-4 font-bold">Web Path Slug</th>
+                    <th className="p-4 font-bold">Origin</th>
+                    <th className="p-4 font-bold">Sustainability Overview</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredMaterials.map((mat) => (
+                    <tr key={mat.id} className="hover:bg-bg-beige/5 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded overflow-hidden shrink-0 border border-bg-beige/10 relative bg-bg-mist">
+                          <img
+                            src={mat.image_url || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80'}
+                            alt={mat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-bg-cream">{mat.name}</h4>
+                        </div>
+                      </td>
+                      <td className="p-4 font-mono font-semibold text-brand-gold">{mat.slug}</td>
+                      <td className="p-4 text-bg-cream/80 font-light max-w-xs truncate">{mat.origin}</td>
+                      <td className="p-4 text-bg-cream/70 font-light max-w-xs truncate">{mat.sustainability}</td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => {
+                            setEditingMaterial(mat);
+                            setShowMaterialModal(true);
+                          }}
+                          className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMaterial(mat.id)}
+                          className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredMaterials.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-bg-cream/40">
+                        No materials logged in the archives.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 6: WELLNESS BENEFITS CRUD */}
+          {activeTab === 'benefits' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Benefit Name</th>
+                    <th className="p-4 font-bold">Functional Impact Description</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {benefits
+                    .filter(ben => 
+                      ben.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      ben.description.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((ben) => (
+                      <tr key={ben.id} className="hover:bg-bg-beige/5 transition-colors">
+                        <td className="p-4 font-bold text-bg-cream flex items-center gap-2">
+                          <span>✨</span> {ben.name}
+                        </td>
+                        <td className="p-4 text-bg-cream/80 font-light max-w-lg leading-relaxed">{ben.description}</td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingBenefit(ben);
+                              setShowBenefitModal(true);
+                            }}
+                            className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBenefit(ben.id)}
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  {benefits.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="p-8 text-center text-bg-cream/40">
+                        No wellness benefits logged. Click "Add Benefit" to create one.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 7: RECOMMENDED APPLICATIONS CRUD */}
+          {activeTab === 'usage_types' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">Application Standard</th>
+                    <th className="p-4 font-bold">Standard Sourcing Context</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {usageTypes
+                    .filter(ut => 
+                      ut.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      ut.description.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((ut) => (
+                      <tr key={ut.id} className="hover:bg-bg-beige/5 transition-colors">
+                        <td className="p-4 font-bold text-bg-cream flex items-center gap-2">
+                          <span>🍳</span> {ut.name}
+                        </td>
+                        <td className="p-4 text-bg-cream/80 font-light max-w-lg leading-relaxed">{ut.description}</td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingUsageType(ut);
+                              setShowUsageTypeModal(true);
+                            }}
+                            className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUsageType(ut.id)}
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  {usageTypes.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="p-8 text-center text-bg-cream/40">
+                        No recommended application contexts logged. Click "Add Application" to create one.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+        </div>
+
+      </main>
+
+      {/* ============================================================== */}
+      {/* MODAL 1: CREATE / EDIT PRODUCT */}
+      {showProductModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowProductModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+              <h3 className="font-serif text-2xl font-bold text-brand-green">
+                {editingProduct ? 'Edit Organic Masterpiece' : 'Log New Organic product'}
+              </h3>
+              <button
+                onClick={() => setShowProductModal(false)}
+                className="text-text-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleProductSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+              
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Product Title</label>
+                <input
+                  type="text"
+                  required
+                  name="name"
+                  defaultValue={editingProduct?.name || ''}
+                  placeholder="e.g. Pure Pampore Mongra Saffron"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Web Path Slug (Unique)</label>
+                <input
+                  type="text"
+                  required
+                  name="slug"
+                  defaultValue={editingProduct?.slug || ''}
+                  placeholder="e.g. pampore-mongra-saffron"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Sub-Category</label>
+                <input
+                  type="text"
+                  name="sub_category"
+                  defaultValue={editingProduct?.sub_category || ''}
+                  placeholder="e.g. Essential Oils, Premium Tea, Grade A+"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">SKU identifier</label>
+                <input
+                  type="text"
+                  required
+                  name="sku"
+                  defaultValue={editingProduct?.sku || ''}
+                  placeholder="e.g. KO-SAF-001"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold font-mono"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Estimated Retail price</label>
+                <input
+                  type="number"
+                  name="price"
+                  defaultValue={editingProduct?.price || ''}
+                  placeholder="e.g. 120"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Minimum Sourcing MOQ</label>
+                <input
+                  type="text"
+                  name="moq"
+                  defaultValue={editingProduct?.moq || '1 kg'}
+                  placeholder="e.g. 1 kg or 50 pieces"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Raw stock volume</label>
+                <input
+                  type="number"
+                  name="stock"
+                  defaultValue={editingProduct?.stock || '100'}
+                  placeholder="e.g. 50"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Short discovery Overview</label>
+                <input
+                  type="text"
+                  required
+                  name="short_description"
+                  defaultValue={editingProduct?.short_description || ''}
+                  placeholder="A concise luxury marketing teaser (1 sentence)..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Detailed Botanical specifications</label>
+                <textarea
+                  required
+                  name="long_description"
+                  rows={4}
+                  defaultValue={editingProduct?.long_description || ''}
+                  placeholder="Full descriptions of chemical profiles, harvest procedures, drying times, and packaging..."
+                  className="bg-bg-beige/30 p-3 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none"
+                ></textarea>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Standard Wholesale Packaging</label>
+                <input
+                  type="text"
+                  name="packaging"
+                  defaultValue={editingProduct?.packaging || 'Ambient-sealed vacuum containers'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Logistics Shipping speed</label>
+                <input
+                  type="text"
+                  name="shipping"
+                  defaultValue={editingProduct?.shipping || 'Air freight direct (10-12 days)'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Availability filters (Comma separated)</label>
+                <input
+                  type="text"
+                  name="availability"
+                  defaultValue={editingProduct?.availability || 'retail,bulk,export'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Cover Image photography Link</label>
+                <input
+                  type="text"
+                  name="image_url"
+                  defaultValue={editingProduct?.image_url || ''}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Category & Subcategory Assignments</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-bg-beige/25 p-4 rounded-xl border border-brand-green/10">
+                  {categories.map((cat) => (
+                    <label key={cat.id} className="flex items-center gap-2 text-xs text-text-primary cursor-pointer hover:text-brand-green transition-colors py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategoryIds.includes(cat.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCategoryIds(prev => [...prev, cat.id]);
+                          } else {
+                            setSelectedCategoryIds(prev => prev.filter(id => id !== cat.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-brand-gold accent-brand-green"
+                      />
+                      <span>🌿 {cat.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Linked Harvest Materials</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-bg-beige/25 p-4 rounded-xl border border-brand-green/10">
+                  {materials.map((mat) => (
+                    <label key={mat.id} className="flex items-center gap-2 text-xs text-text-primary cursor-pointer hover:text-brand-green transition-colors py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={selectedMaterialIds.includes(mat.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedMaterialIds(prev => [...prev, mat.id]);
+                          } else {
+                            setSelectedMaterialIds(prev => prev.filter(id => id !== mat.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-brand-gold accent-brand-green"
+                      />
+                      <span>🌸 {mat.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Wellness Benefits</label>
+                <p className="text-[10px] text-text-muted mb-3 pl-1">Check a benefit to assign it. A custom description field will appear — leave blank to use the default.</p>
+                <div className="flex flex-col gap-3">
+                  {benefits.map((ben) => {
+                    const isChecked = selectedBenefitIds.includes(ben.id);
+                    return (
+                      <div key={ben.id} className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                        isChecked ? 'border-brand-green/40 bg-brand-green/5' : 'border-brand-green/10 bg-bg-beige/20'
+                      }`}>
+                        <label className="flex items-center gap-3 p-3 cursor-pointer hover:bg-brand-green/5 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedBenefitIds(prev => [...prev, ben.id]);
+                              } else {
+                                setSelectedBenefitIds(prev => prev.filter(id => id !== ben.id));
+                                setBenefitCustomDescs(prev => { const n = { ...prev }; delete n[ben.id]; return n; });
+                              }
+                            }}
+                            className="w-4 h-4 accent-brand-green flex-shrink-0"
+                          />
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="text-xs font-semibold text-text-primary">✨ {ben.name}</span>
+                            {!isChecked && <span className="text-[10px] text-text-muted truncate mt-0.5">{ben.description}</span>}
+                          </div>
+                          {isChecked && (
+                            <span className="text-[9px] text-brand-gold font-bold uppercase tracking-wider bg-brand-gold/10 px-1.5 py-0.5 rounded flex-shrink-0">Selected</span>
+                          )}
+                        </label>
+                        {isChecked && (
+                          <div className="px-3 pb-3">
+                            <label className="text-[9px] uppercase font-bold tracking-wider text-brand-green/70 block mb-1">Custom description for this product <span className="text-text-muted font-normal normal-case">(optional — overrides default)</span></label>
+                            <textarea
+                              rows={2}
+                              value={benefitCustomDescs[ben.id] || ''}
+                              onChange={(e) => setBenefitCustomDescs(prev => ({ ...prev, [ben.id]: e.target.value }))}
+                              placeholder={ben.description}
+                              className="w-full bg-bg-beige/50 p-2 rounded-lg border border-brand-green/15 focus:outline-none focus:border-brand-gold text-text-primary text-xs resize-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Recommended Applications</label>
+                <p className="text-[10px] text-text-muted mb-3 pl-1">Check an application to assign it. A custom description field will appear — leave blank to use the default.</p>
+                <div className="flex flex-col gap-3">
+                  {usageTypes.map((ut) => {
+                    const isChecked = selectedUsageTypeIds.includes(ut.id);
+                    return (
+                      <div key={ut.id} className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                        isChecked ? 'border-brand-green/40 bg-brand-green/5' : 'border-brand-green/10 bg-bg-beige/20'
+                      }`}>
+                        <label className="flex items-center gap-3 p-3 cursor-pointer hover:bg-brand-green/5 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedUsageTypeIds(prev => [...prev, ut.id]);
+                              } else {
+                                setSelectedUsageTypeIds(prev => prev.filter(id => id !== ut.id));
+                                setUsageTypeCustomDescs(prev => { const n = { ...prev }; delete n[ut.id]; return n; });
+                              }
+                            }}
+                            className="w-4 h-4 accent-brand-green flex-shrink-0"
+                          />
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="text-xs font-semibold text-text-primary">🍃 {ut.name}</span>
+                            {!isChecked && <span className="text-[10px] text-text-muted truncate mt-0.5">{ut.description}</span>}
+                          </div>
+                          {isChecked && (
+                            <span className="text-[9px] text-brand-gold font-bold uppercase tracking-wider bg-brand-gold/10 px-1.5 py-0.5 rounded flex-shrink-0">Selected</span>
+                          )}
+                        </label>
+                        {isChecked && (
+                          <div className="px-3 pb-3">
+                            <label className="text-[9px] uppercase font-bold tracking-wider text-brand-green/70 block mb-1">Custom description for this product <span className="text-text-muted font-normal normal-case">(optional — overrides default)</span></label>
+                            <textarea
+                              rows={2}
+                              value={usageTypeCustomDescs[ut.id] || ''}
+                              onChange={(e) => setUsageTypeCustomDescs(prev => ({ ...prev, [ut.id]: e.target.value }))}
+                              placeholder={ut.description}
+                              className="w-full bg-bg-beige/50 p-2 rounded-lg border border-brand-green/15 focus:outline-none focus:border-brand-gold text-text-primary text-xs resize-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Image Gallery URLs (JSON list or comma-separated)</label>
+                <textarea
+                  name="gallery_urls"
+                  rows={2}
+                  defaultValue={editingProduct?.gallery_urls || '[]'}
+                  placeholder='e.g. ["url1", "url2"]'
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold resize-none"
+                ></textarea>
+              </div>
+
+              <div className="flex items-center gap-6 sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-wider text-brand-green cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="certified"
+                    defaultChecked={editingProduct?.certified === 1}
+                    className="w-4 h-4 text-brand-gold accent-brand-green"
+                  />
+                  <span>USDA Certified Organic</span>
+                </label>
+
+                <label className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-wider text-brand-green cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="export_quality"
+                    defaultChecked={editingProduct?.export_quality === 1}
+                    className="w-4 h-4 text-brand-gold accent-brand-green"
+                  />
+                  <span>Premium Export Grade</span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="sm:col-span-2 bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl mt-4 cursor-pointer shadow"
+              >
+                Save Organic product Specifications
+              </button>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 2: CREATE / EDIT BLOG */}
+      {showBlogModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowBlogModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+              <h3 className="font-serif text-2xl font-bold text-brand-green">
+                {editingBlog ? 'Edit Harvest Chronicle' : 'Log New Agricultural Diary'}
+              </h3>
+              <button
+                onClick={() => setShowBlogModal(false)}
+                className="text-text-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleBlogSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+              
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Diary Title</label>
+                <input
+                  type="text"
+                  required
+                  name="title"
+                  defaultValue={editingBlog?.title || ''}
+                  placeholder="e.g. Saffron Harvest Diaries from Pampore Plateau"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Web Path Slug (Unique)</label>
+                <input
+                  type="text"
+                  required
+                  name="slug"
+                  defaultValue={editingBlog?.slug || ''}
+                  placeholder="e.g. saffron-harvest-diaries"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Author Identity</label>
+                <input
+                  type="text"
+                  required
+                  name="author"
+                  defaultValue={editingBlog?.author || 'Kashmiri Organic Editorial Team'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Diary Category</label>
+                <select
+                  name="category"
+                  defaultValue={editingBlog?.category || 'Organic Living'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                >
+                  <option value="Organic Living">Organic Living</option>
+                  <option value="Natural Living">Natural Living</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Diary tags (Comma separated)</label>
+                <input
+                  type="text"
+                  name="tags"
+                  defaultValue={editingBlog?.tags || 'harvest, saffron, pampore'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Publishing status</label>
+                <select
+                  name="status"
+                  defaultValue={editingBlog?.status || 'published'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                >
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">SEO snippet Teaser</label>
+                <input
+                  type="text"
+                  required
+                  name="seo_description"
+                  defaultValue={editingBlog?.seo_description || ''}
+                  placeholder="Short summarizing meta teaser displayed in listing (2 sentences max)..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Main Editorial Content (Markdown)</label>
+                <textarea
+                  required
+                  name="content"
+                  rows={6}
+                  defaultValue={editingBlog?.content || ''}
+                  placeholder="Write full article. Use '## Subtitle' for section headers and '**word**' for bold text highlights..."
+                  className="bg-bg-beige/30 p-3 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none"
+                ></textarea>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Cover Image photography Link</label>
+                <input
+                  type="text"
+                  name="featured_image"
+                  defaultValue={editingBlog?.featured_image || ''}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                />
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Related Products (Showcase)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-bg-beige/25 p-4 rounded-xl border border-brand-green/10">
+                  {products.map((prod) => (
+                    <label key={prod.id} className="flex items-center gap-2 text-xs text-text-primary cursor-pointer hover:text-brand-green transition-colors py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={selectedBlogProductIds.includes(prod.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedBlogProductIds(prev => [...prev, prod.id]);
+                          } else {
+                            setSelectedBlogProductIds(prev => prev.filter(id => id !== prod.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-brand-gold accent-brand-green"
+                      />
+                      <span>📦 {prod.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-2.5 pl-1 block">Related Harvest Materials</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-bg-beige/25 p-4 rounded-xl border border-brand-green/10">
+                  {materials.map((mat) => (
+                    <label key={mat.id} className="flex items-center gap-2 text-xs text-text-primary cursor-pointer hover:text-brand-green transition-colors py-0.5">
+                      <input
+                        type="checkbox"
+                        checked={selectedBlogMaterialIds.includes(mat.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedBlogMaterialIds(prev => [...prev, mat.id]);
+                          } else {
+                            setSelectedBlogMaterialIds(prev => prev.filter(id => id !== mat.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-brand-gold accent-brand-green"
+                      />
+                      <span>🌸 {mat.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="sm:col-span-2 bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl mt-4 cursor-pointer shadow"
+              >
+                Save Editorial Diary specifications
+              </button>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 3: CREATE / EDIT CATEGORY */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowCategoryModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-md w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+               <h3 className="font-serif text-2xl font-bold text-brand-green">
+                 {editingCategory ? 'Edit Category' : 'Create New Category'}
+               </h3>
+               <button
+                 onClick={() => setShowCategoryModal(false)}
+                 className="text-text-muted hover:text-text-primary"
+               >
+                 <X className="w-5 h-5" />
+               </button>
+            </div>
+
+            <form onSubmit={handleCategorySubmit} className="flex flex-col gap-5 text-xs">
+               
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Category Name</label>
+                 <input
+                   type="text"
+                   required
+                   name="name"
+                   defaultValue={editingCategory?.name || ''}
+                   placeholder="e.g. Wellness & Aromas"
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Web Path Slug (Unique)</label>
+                 <input
+                   type="text"
+                   required
+                   name="slug"
+                   defaultValue={editingCategory?.slug || ''}
+                   placeholder="e.g. wellness-aromas"
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Brief Description</label>
+                 <textarea
+                   name="description"
+                   rows={3}
+                   defaultValue={editingCategory?.description || ''}
+                   placeholder="Tease the essence of this dynamic category..."
+                   className="bg-bg-beige/30 p-3 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Category Cover Image Link</label>
+                 <input
+                   type="text"
+                   name="image_url"
+                   defaultValue={editingCategory?.image_url || ''}
+                   placeholder="https://images.unsplash.com/photo-..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <button
+                 type="submit"
+                 className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl mt-4 cursor-pointer shadow"
+               >
+                 Save Category Specifications
+               </button>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 4: CREATE / EDIT HARVEST MATERIAL */}
+      {showMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowMaterialModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+               <h3 className="font-serif text-2xl font-bold text-brand-green">
+                 {editingMaterial ? 'Edit Harvest Material' : 'Create New Material'}
+               </h3>
+               <button
+                 onClick={() => setShowMaterialModal(false)}
+                 className="text-text-muted hover:text-text-primary"
+               >
+                 <X className="w-5 h-5" />
+               </button>
+            </div>
+
+            <form onSubmit={handleMaterialSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+               
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Material Name</label>
+                 <input
+                   type="text"
+                   required
+                   name="name"
+                   defaultValue={editingMaterial?.name || ''}
+                   placeholder="e.g. Saffron Stigmas"
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Web Path Slug (Unique)</label>
+                 <input
+                   type="text"
+                   required
+                   name="slug"
+                   defaultValue={editingMaterial?.slug || ''}
+                   placeholder="e.g. saffron-stigmas"
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Pristine Origin region</label>
+                 <input
+                   type="text"
+                   name="origin"
+                   defaultValue={editingMaterial?.origin || ''}
+                   placeholder="e.g. Pampore Saffron Plateaus, Kashmir Valley"
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Overview summary</label>
+                 <textarea
+                   name="overview"
+                   rows={2}
+                   defaultValue={editingMaterial?.overview || ''}
+                   placeholder="Organic description, therapeutic compounds..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Ethical Harvesting & Sustainability</label>
+                 <textarea
+                   name="sustainability"
+                   rows={2}
+                   defaultValue={editingMaterial?.sustainability || ''}
+                   placeholder="Orchard ecosystem preservation guidelines..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Manufacturing Process</label>
+                 <textarea
+                   name="manufacturing_process"
+                   rows={2}
+                   defaultValue={editingMaterial?.manufacturing_process || ''}
+                   placeholder="Sun-drying, hand-picking steps..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Organic Health Benefits</label>
+                 <textarea
+                   name="benefits"
+                   rows={2}
+                   defaultValue={editingMaterial?.benefits || ''}
+                   placeholder="Antioxidant properties, skin-care applications..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Material Cover Image Link</label>
+                 <input
+                   type="text"
+                   name="image_url"
+                   defaultValue={editingMaterial?.image_url || ''}
+                   placeholder="https://images.unsplash.com/photo-..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                 />
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Heritage & Cultural History Narrative</label>
+                 <textarea
+                   name="history"
+                   rows={4}
+                   defaultValue={editingMaterial?.history || ''}
+                   placeholder="Rich narrative detailing ancient origins, Mughal/heritage patronage, dynamic valley traditions..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold resize-none text-text-primary"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Material Gallery Showcase Image URLs (JSON List)</label>
+                 <textarea
+                   name="gallery_urls"
+                   rows={2}
+                   defaultValue={editingMaterial?.gallery_urls || '[]'}
+                   placeholder='e.g. ["url1", "url2"]'
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold resize-none font-mono"
+                 ></textarea>
+               </div>
+
+               <button
+                 type="submit"
+                 className="sm:col-span-2 bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl mt-4 cursor-pointer shadow"
+               >
+                 Save Material Specifications
+               </button>
+
+             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 5: CREATE / EDIT WELLNESS BENEFIT */}
+      {showBenefitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowBenefitModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-md w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+              <h3 className="font-serif text-2xl font-bold text-brand-green">
+                {editingBenefit ? 'Edit Wellness Benefit' : 'Add Wellness Benefit'}
+              </h3>
+              <button
+                onClick={() => setShowBenefitModal(false)}
+                className="text-text-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form key={editingBenefit?.id ?? 'new-benefit'} onSubmit={handleBenefitSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Benefit Name</label>
+                <input
+                  type="text"
+                  required
+                  name="name"
+                  defaultValue={editingBenefit?.name || ''}
+                  placeholder="e.g. Immunity Booster, Radiant Glow"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Impact Description</label>
+                <textarea
+                  required
+                  name="description"
+                  rows={3}
+                  defaultValue={editingBenefit?.description || ''}
+                  placeholder="e.g. Strengthens natural body defenses against seasonal infections..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary resize-none"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2 cursor-pointer shadow disabled:opacity-60"
+              >
+                {isLoading ? 'Saving...' : 'Save Benefit'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 6: CREATE / EDIT RECOMMENDED APPLICATION */}
+      {showUsageTypeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowUsageTypeModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-md w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+              <h3 className="font-serif text-2xl font-bold text-brand-green">
+                {editingUsageType ? 'Edit Usage Context' : 'Add Usage Context'}
+              </h3>
+              <button
+                onClick={() => setShowUsageTypeModal(false)}
+                className="text-text-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form key={editingUsageType?.id ?? 'new-usage'} onSubmit={handleUsageTypeSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Application Name</label>
+                <input
+                  type="text"
+                  required
+                  name="name"
+                  defaultValue={editingUsageType?.name || ''}
+                  placeholder="e.g. Daily Use, Therapy, Culinary"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Usage Guidelines</label>
+                <textarea
+                  required
+                  name="description"
+                  rows={3}
+                  defaultValue={editingUsageType?.description || ''}
+                  placeholder="e.g. Concentrated natural remedies for healing, soothing, and physical therapy..."
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary resize-none"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2 cursor-pointer shadow disabled:opacity-60"
+              >
+                {isLoading ? 'Saving...' : 'Save Application'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

@@ -1,0 +1,850 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin Kashmiri Organic",
+      "email": "admin@kashmiriorganic.com",
+      "password_hash": "$2a$10$tMhP4p07n6z9YgK/YvKgeOSN.CymcWdM82oK5T5B/iB4lFskG64U.",
+      "role": "admin",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Health",
+      "slug": "health",
+      "description": "Kashmiri organic solutions to strengthen immunity and vitality.",
+      "image_url": "/images/categories/health.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Skincare",
+      "slug": "skincare",
+      "description": "Glow naturally with saffron and cold-pressed botanical oils.",
+      "image_url": "/images/categories/skincare.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Fitness",
+      "slug": "fitness",
+      "description": "Clean energy resources harvested from the high-altitude fields of Kashmir.",
+      "image_url": "/images/categories/fitness.jpg"
+    },
+    {
+      "id": 4,
+      "name": "Natural Living",
+      "slug": "natural-living",
+      "description": "Luxury handcrafted woodware and eco-friendly household goods.",
+      "image_url": "/images/categories/natural-living.jpg"
+    },
+    {
+      "id": 5,
+      "name": "Wellness",
+      "slug": "wellness",
+      "description": "Aromatic therapeutic oils and traditional herbal wellness blends.",
+      "image_url": "/images/categories/wellness.jpg"
+    }
+  ],
+  "product_types": [
+    {
+      "id": 1,
+      "name": "Wearable",
+      "slug": "wearable"
+    },
+    {
+      "id": 2,
+      "name": "Eatable",
+      "slug": "eatable"
+    },
+    {
+      "id": 3,
+      "name": "Herbal",
+      "slug": "herbal"
+    },
+    {
+      "id": 4,
+      "name": "Oils",
+      "slug": "oils"
+    },
+    {
+      "id": 5,
+      "name": "Accessories",
+      "slug": "accessories"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "name": "Saffron",
+      "slug": "saffron",
+      "overview": "Kashmiri Saffron (Lacha or Mongra) is globally celebrated for its dark crimson strands, strong aroma, and unmatched medical values. Grown in the fields of Pampore, it is the most premium saffron in the world.",
+      "origin": "Pampore Saffron Fields, Kashmir Valley (Altitude: 1,600m)",
+      "manufacturing_process": "Harvested exclusively by hand during a short two-week blooming window in autumn. Strands are carefully separated and shade-dried to lock in maximum crocin content.",
+      "sustainability": "100% dry-farmed using traditional heritage methods passed down through generations. No chemicals or synthetic boosters are used.",
+      "benefits": "Powerful antioxidant, enhances skin glow and complexion, boosts mood and memory, supports cardiovascular health and acts as an organic immunity booster.",
+      "image_url": "/images/materials/saffron.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Honey",
+      "slug": "honey",
+      "overview": "Our raw, unfiltered honey is collected from deep forests and wild lavender fields of Kashmir. It remains unpasteurized, retaining all living enzymes and organic pollens.",
+      "origin": "Kashmiri Forest Reserves and Wild Lavender Valleys",
+      "manufacturing_process": "Ethically harvested by local nomadic beekeepers. Coarse-filtered once through organic cotton mesh to remove large particles without heat treatment or micro-filtration.",
+      "sustainability": "Bee-friendly and cruelty-free honey harvesting. Bees are nurtured naturally in organic hives, maintaining local agricultural biodiversity.",
+      "benefits": "Natural prebiotic, rapid energy source, organic cough suppressant, excellent wound healer, and premium sugar substitute rich in wild floral trace minerals.",
+      "image_url": "/images/materials/honey.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Wood",
+      "slug": "wood",
+      "overview": "Authentic Kashmiri Walnut Wood is highly durable and features beautiful dark grain patterns. Celebrated globally, walnut wood carving is a heritage craft protected as a GI asset in Kashmir.",
+      "origin": "Srinagar and Anantnag Walnut Groves, Kashmir",
+      "manufacturing_process": "Walnut logs are naturally seasoned for 2 to 5 years to prevent cracking. Talented master artisans then carve them by hand using specialized iron chisels.",
+      "sustainability": "Felled strictly from dead or licensed senior walnut trees. We actively replant three walnut saplings for every tree utilized.",
+      "benefits": "Food-safe natural coating, generation-lasting durability, beautiful organic centerpiece decor, biodegradable kitchenware, and support for rural woodcraft guilds.",
+      "image_url": "/images/materials/wood.jpg"
+    },
+    {
+      "id": 4,
+      "name": "Walnut",
+      "slug": "walnut",
+      "overview": "Rich in healthy fats and proteins, Kashmiri Walnuts are grown organically in clean mountain air. They are valued for thin shells, light-colored kernels, and superior buttery flavor.",
+      "origin": "Kupwara and Shopian High Altitude Walnut Orchards",
+      "manufacturing_process": "Sun-dried slowly on traditional straw mats. Shelled carefully by hand to preserve the golden butterfly-shaped kernel halves.",
+      "sustainability": "Grown under rainfed conditions with zero artificial fertilizer or pesticide use. Preserving traditional orchard ecosystems.",
+      "benefits": "Excellent source of Omega-3 (ALA) fatty acids, boosts cognitive performance, lowers LDL cholesterol, and maintains perfect skin elasticity and hair health.",
+      "image_url": "/images/materials/walnut.jpg"
+    },
+    {
+      "id": 5,
+      "name": "Herbs",
+      "slug": "herbs",
+      "overview": "Wildcrafted Himalayan herbs harvested from the pristine high meadows of Sonamarg and Gulmarg, capturing the concentrated therapeutic values of high-altitude flora.",
+      "origin": "Pristine Himalayan Alpine Valleys (Altitude: 2,500m+)",
+      "manufacturing_process": "Gently hand-picked by tribal herbalists, clean washed in glacial meltwater, and solar dehydrated at low temperatures to conserve medicinal volatile oils.",
+      "sustainability": "Ethical wildcrafting principles followed. We harvest less than 20% of wild herb clusters to ensure zero disruption to alpine ecosystems.",
+      "benefits": "Powerful adaptogens, deep respiratory relief, profound relaxation, soothing inflammation, and excellent base for luxury botanical skincare solutions.",
+      "image_url": "/images/materials/herbs.jpg"
+    },
+    {
+      "id": 6,
+      "name": "Royal Pahalgam Lavender",
+      "slug": "royal-pahalgam-lavender",
+      "overview": "",
+      "origin": "Pahalgam Highlands, Kashmir",
+      "manufacturing_process": "",
+      "sustainability": "",
+      "benefits": "",
+      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80"
+    }
+  ],
+  "benefits": [
+    {
+      "id": 1,
+      "name": "Immunity Booster",
+      "description": "Strengthens natural body defenses against seasonal infections."
+    },
+    {
+      "id": 2,
+      "name": "Radiant Glow",
+      "description": "Improves skin complexion, reduces pigmentation, and adds natural radiance."
+    },
+    {
+      "id": 3,
+      "name": "Cognitive Health",
+      "description": "Improves brain power, focus, concentration, and protects neurons."
+    },
+    {
+      "id": 4,
+      "name": "Stress Relief",
+      "description": "Soothes nervous system, reduces anxiety levels, and promotes deep sleep."
+    },
+    {
+      "id": 5,
+      "name": "Clean Energy",
+      "description": "Provides sustained physical power and metabolism support without crashes."
+    }
+  ],
+  "usage_types": [
+    {
+      "id": 1,
+      "name": "Daily Use",
+      "description": "Designed for safe, continuous everyday usage in food or lifestyle."
+    },
+    {
+      "id": 2,
+      "name": "Therapy",
+      "description": "Concentrated natural remedies for healing, soothing, and physical therapy."
+    },
+    {
+      "id": 3,
+      "name": "Beauty",
+      "description": "Luxury cosmetic and skin-nourishment applications."
+    },
+    {
+      "id": 4,
+      "name": "Fitness",
+      "description": "High-performance nutrition for pre/post workouts and weight management."
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Kashmiri Mongra Saffron (Grade A+)",
+      "slug": "kashmiri-mongra-saffron-grade-a",
+      "short_description": "The world's finest saffron, hand-harvested from Pampore, boasting the highest crocin concentration and deep red stigma.",
+      "long_description": "Our Grade A+ Kashmiri Mongra Saffron represents the absolute pinnacle of luxury spices. Harvested in the scenic Pampore valleys, it is highly distinct for its dark crimson red strands with no yellow waste styled parts. Rich in bioactive compounds like Crocin, Safranal, and Picrocrocin, this saffron is renowned globally for its intense aroma, coloring strength, and powerful therapeutic qualities. Every single strand is delicately plucked by hand and shade-dried to preserve its high oil content. Ideal for direct consumption, luxury cuisine, herbal milk, and organic face treatments.",
+      "image_url": "/images/products/saffron.jpg",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "50 grams (Retail) / 1kg (Export)",
+      "packaging": "Premium moisture-resistant glass jars with gold-embossed velvet boxes.",
+      "shipping": "Worldwide air shipping available. Certified with phytosanitary documentation.",
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "price": null,
+      "discount_price": null,
+      "sku": "KO-SAF-001",
+      "stock": 100,
+      "sub_category": "Special Reserve"
+    },
+    {
+      "id": 2,
+      "name": "Organic Himalayan Acacia Honey",
+      "slug": "organic-himalayan-acacia-honey",
+      "short_description": "Pure, pale-golden wild acacia flower honey, harvested from the pristine high orchards of Kashmir with a sweet, mild flavor.",
+      "long_description": "Harvested from beehives placed in wild Acacia forests in the high altitudes of Kashmir, this honey is renowned for its light straw color and clear, glass-like consistency. It remains liquid for a prolonged duration due to its high fructose concentration. Ethically collected using non-heating extraction processes, this honey is packed with wild floral pollens and natural enzymes. Its subtle floral sweetness makes it a fantastic premium alternative to processed sugar for sweetening beverages or raw culinary treats.",
+      "image_url": "/images/products/honey.jpg",
+      "gallery_urls": "[\"/images/products/honey.jpg\",\"/images/products/honey-jar.jpg\"]",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "100 jars (Retail) / 500kg (Bulk Export)",
+      "packaging": "Food-grade glass jars with cork lids and rustic jute neck wrap.",
+      "shipping": "Secured vacuum sealed pallets for international sea and air shipping.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Heritage Carved Walnut Wood Fruit Bowl",
+      "slug": "heritage-carved-walnut-wood-fruit-bowl",
+      "short_description": "An exquisite hand-carved heritage bowl created from seasoned Kashmiri walnut wood by master woodcraft artisans.",
+      "long_description": "Bring the historical craftsmanship of the Kashmir valley into your home with this stunning fruit bowl. Masterfully carved by local artisans from a single piece of seasoned walnut wood (aged over 3 years), it features traditional chinar leaf and floral motifs. Walnut wood is cherished globally for its dense grain and durability. Each piece has distinct wood rings and natural shades, making it a unique piece of living art. Finished with food-safe organic walnut oil coating.",
+      "image_url": "/images/products/walnut-bowl.jpg",
+      "gallery_urls": "[\"/images/products/walnut-bowl.jpg\",\"/images/products/walnut-wood.jpg\"]",
+      "availability": "retail,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "10 pieces",
+      "packaging": "Custom felt-lined wooden crates with heavy eco-friendly cardboard layers.",
+      "shipping": "Safe air/sea freight shipping with certified termite-fumigation certificate.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Cold-Pressed Wild Walnut Kernel Oil",
+      "slug": "cold-pressed-wild-walnut-kernel-oil",
+      "short_description": "Rich, golden oil cold-pressed from premium Kashmiri walnuts, loaded with Omega-3 fatty acids and skin-rejuvenating nutrients.",
+      "long_description": "Our Cold-Pressed Wild Walnut Kernel Oil is extracted from hand-selected walnuts grown in organic high-altitude orchards. We use a slow wooden-expeller process (Ghani) at temperatures under 38°C to ensure none of the essential nutrients, aroma, or delicate vitamin compounds are damaged. This nutrient-dense luxury oil is exceptional for anti-aging skin serums, soothing head massages, and high-end culinary dressings that support cardiovascular wellness.",
+      "image_url": "/images/products/walnut-oil.jpg",
+      "gallery_urls": "[\"/images/products/walnut-oil.jpg\",\"/images/products/walnut-oil-bottle.jpg\"]",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "50 litres (Bulk) / 200 bottles (Retail)",
+      "packaging": "Amber glass dropper bottles with gold seals / HDPE bulk food containers.",
+      "shipping": "Leak-proof thermal-insulated transport packaging.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Wild Lavender Therapeutic Essential Oil",
+      "slug": "wild-lavender-therapeutic-essential-oil",
+      "short_description": "Pure steam-distilled essential oil harvested from wild lavender fields of the high Gulmarg valleys for ultimate relaxation.",
+      "long_description": "Distilled using pristine mountain spring water, this essential oil represents the botanical essence of Kashmir's high-altitude wild lavender. The thermal stress on lavender growing in high climates forces the plants to synthesize richer concentrations of Linalool and Linalyl Acetate. This results in an incredibly sweet, calming aroma with profound therapeutic properties. Perfect for aromatherapy, easing sleep struggles, healing minor skin abrasions, and luxurious massage blends.",
+      "image_url": "/images/products/lavender-oil.jpg",
+      "gallery_urls": "[\"/images/products/lavender-oil.jpg\",\"/images/products/lavender-fields.jpg\"]",
+      "availability": "retail,bulk",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "100 bottles / 10 Litres (Bulk)",
+      "packaging": "UV-blocking cobalt blue glass bottles with child-safety tamper drop seals.",
+      "shipping": "Safe air transport certified under IATA hazardous liquid classifications.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Organic Saffron Herbal Face Soap",
+      "slug": "organic-saffron-herbal-face-soap",
+      "short_description": "Luxurious handmade bathing soap infused with genuine Pampore saffron and rich therapeutic mountain herbs.",
+      "long_description": "Indulge your skin with this artisanal cold-process herbal face soap, hand-poured in rural Kashmiri cooperatives. We infuse pure Mongra saffron strands, lavender petals, and cold-pressed walnut oil directly into the soap batter. It provides a luxurious creamy lather that gently cleanses skin pores, reduces dark spots, and maintains deep hydration. Free from synthetic sulfates, parabens, or artificial dyes.",
+      "image_url": "https://images.unsplash.com/photo-1607006342411-92fc2a41d7c7?auto=format&fit=crop&w=800&q=80",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1607006342411-92fc2a41d7c7?auto=format&fit=crop&w=800&q=80\"]",
+      "availability": "retail,bulk",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "50 bars",
+      "packaging": "Individually wrapped in recycled handmade paper box with gold-foil seal.",
+      "shipping": "Standard ground and air transit.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Pure Kesar Badam Infused Honey",
+      "slug": "pure-kesar-badam-honey",
+      "short_description": "Exquisite wild forest honey pre-blended with whole mountain almonds and Pampore saffron strands.",
+      "long_description": "An ancestral winter tonic from Jammu & Kashmir. We steep high-purity Mongra saffron strands and whole premium mountain almonds in raw, unpasteurized forest acacia honey for 45 days. The result is a highly nutrient-dense, golden nectar with an unbelievably rich, nutty flavor. It naturally boosts immunity, builds core muscle endurance, and serves as an ultimate healthy breakfast topping.",
+      "image_url": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80\"]",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "50 jars",
+      "packaging": "Hexagonal glass jars with gold lids and hand-tied tag locks.",
+      "shipping": "Thermal protected container crates.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Walnut Wood Circular Coaster Set",
+      "slug": "walnut-wood-coaster-set",
+      "short_description": "A set of 6 beautiful handcrafted coasters carved from seasoned walnut timber, protecting your surfaces in style.",
+      "long_description": "Protect your luxury tables with these masterfully hand-turned circular coasters. Made from slow-growth Kashmiri walnut wood and treated for 3 years, they showcase distinct natural ring lines and deep chocolate grains. The set includes a custom-matched carved holder. Coated with organic oil for a food-safe, water-resistant surface.",
+      "image_url": "https://images.unsplash.com/photo-1546482502-61d0092288d6?auto=format&fit=crop&w=800&q=80",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1546482502-61d0092288d6?auto=format&fit=crop&w=800&q=80\"]",
+      "availability": "retail,export",
+      "certified": 0,
+      "export_quality": 1,
+      "moq": "20 sets",
+      "packaging": "Wrapped in muslin cloth inside a heavy recycled craft paper tube.",
+      "shipping": "Safe custom carton pallets.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 9,
+      "name": "Premium Kashmiri Gucchi Mushrooms",
+      "slug": "premium-gucchi-mushrooms",
+      "short_description": "Rare, wild high-altitude morel mushrooms, hand-foraged from the deep pine forests of Kupwara.",
+      "long_description": "Gucchi mushrooms (wild Himalayan black morels) are among the most expensive and sought-after gourmet mushrooms on earth. Locally hand-gathered by forest tribes in high pine forests of Kashmir, they cannot be cultivated artificially. They possess an incredibly rich, smoky, and earthy umami flavor. Sun-dried to preserve their nutrients, Gucchi mushrooms are high in Vitamin D and antioxidants, boosting core immunity.",
+      "image_url": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80\"]",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "500 grams",
+      "packaging": "Vacuum-sealed air-tight ambient packages within premium wooden gift boxes.",
+      "shipping": "Direct air courier to preserve product dryness.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    },
+    {
+      "id": 10,
+      "name": "Saffron Infused Face Glow Serum",
+      "slug": "saffron-rejuvenating-facial-serum",
+      "short_description": "A luxurious botanical face oil blend, loaded with pure Pampore saffron extracts and alpine herbs.",
+      "long_description": "Reveal natural glowing skin with this luxury botanical oil face glow serum. We dry-infuse Pampore Mongra saffron stigmas, sweet almond oil, wild lavender oil, and mountain spring herbs for a highly-nourishing treatment. Rich in vitamins and carotenoids, it helps reduce fine lines, brightens skin complexion, and builds a natural defensive layer against sun rays.",
+      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80\"]",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 1,
+      "moq": "100 bottles",
+      "packaging": "Tamper-resistant gold dropper bottle inside a velvet-lined case.",
+      "shipping": "Secure padded parcels for international safety.",
+      "created_at": "2026-05-29T20:20:24.000Z"
+    }
+  ],
+  "product_categories": [
+    {
+      "product_id": 2,
+      "category_id": 1
+    },
+    {
+      "product_id": 2,
+      "category_id": 5
+    },
+    {
+      "product_id": 3,
+      "category_id": 4
+    },
+    {
+      "product_id": 4,
+      "category_id": 2
+    },
+    {
+      "product_id": 4,
+      "category_id": 5
+    },
+    {
+      "product_id": 5,
+      "category_id": 5
+    },
+    {
+      "product_id": 5,
+      "category_id": 2
+    },
+    {
+      "product_id": 6,
+      "category_id": 2
+    },
+    {
+      "product_id": 6,
+      "category_id": 5
+    },
+    {
+      "product_id": 7,
+      "category_id": 1
+    },
+    {
+      "product_id": 7,
+      "category_id": 3
+    },
+    {
+      "product_id": 7,
+      "category_id": 5
+    },
+    {
+      "product_id": 8,
+      "category_id": 4
+    },
+    {
+      "product_id": 9,
+      "category_id": 1
+    },
+    {
+      "product_id": 9,
+      "category_id": 3
+    },
+    {
+      "product_id": 10,
+      "category_id": 2
+    },
+    {
+      "product_id": 10,
+      "category_id": 5
+    },
+    {
+      "product_id": 1,
+      "category_id": 1
+    },
+    {
+      "product_id": 1,
+      "category_id": 2
+    }
+  ],
+  "product_types_mapping": [
+    {
+      "product_id": 1,
+      "type_id": 3
+    },
+    {
+      "product_id": 1,
+      "type_id": 2
+    },
+    {
+      "product_id": 2,
+      "type_id": 2
+    },
+    {
+      "product_id": 3,
+      "type_id": 5
+    },
+    {
+      "product_id": 4,
+      "type_id": 4
+    },
+    {
+      "product_id": 5,
+      "type_id": 4
+    },
+    {
+      "product_id": 6,
+      "type_id": 3
+    },
+    {
+      "product_id": 7,
+      "type_id": 2
+    },
+    {
+      "product_id": 8,
+      "type_id": 5
+    },
+    {
+      "product_id": 9,
+      "type_id": 2
+    },
+    {
+      "product_id": 10,
+      "type_id": 4
+    }
+  ],
+  "product_materials": [
+    {
+      "product_id": 2,
+      "material_id": 2
+    },
+    {
+      "product_id": 3,
+      "material_id": 3
+    },
+    {
+      "product_id": 4,
+      "material_id": 4
+    },
+    {
+      "product_id": 5,
+      "material_id": 5
+    },
+    {
+      "product_id": 6,
+      "material_id": 1
+    },
+    {
+      "product_id": 6,
+      "material_id": 5
+    },
+    {
+      "product_id": 7,
+      "material_id": 2
+    },
+    {
+      "product_id": 7,
+      "material_id": 1
+    },
+    {
+      "product_id": 8,
+      "material_id": 3
+    },
+    {
+      "product_id": 9,
+      "material_id": 5
+    },
+    {
+      "product_id": 10,
+      "material_id": 1
+    },
+    {
+      "product_id": 10,
+      "material_id": 5
+    },
+    {
+      "product_id": 1,
+      "material_id": 1
+    },
+    {
+      "product_id": 1,
+      "material_id": 6
+    }
+  ],
+  "product_benefits": [
+    {
+      "product_id": 2,
+      "benefit_id": 1
+    },
+    {
+      "product_id": 2,
+      "benefit_id": 5
+    },
+    {
+      "product_id": 4,
+      "benefit_id": 2
+    },
+    {
+      "product_id": 4,
+      "benefit_id": 3
+    },
+    {
+      "product_id": 5,
+      "benefit_id": 4
+    },
+    {
+      "product_id": 6,
+      "benefit_id": 2
+    },
+    {
+      "product_id": 7,
+      "benefit_id": 1
+    },
+    {
+      "product_id": 7,
+      "benefit_id": 5
+    },
+    {
+      "product_id": 8,
+      "benefit_id": 5
+    },
+    {
+      "product_id": 9,
+      "benefit_id": 1
+    },
+    {
+      "product_id": 10,
+      "benefit_id": 2
+    },
+    {
+      "product_id": 10,
+      "benefit_id": 4
+    },
+    {
+      "product_id": 1,
+      "benefit_id": 1,
+      "custom_description": "Strengthens natural body defenses against seasonal infections."
+    },
+    {
+      "product_id": 1,
+      "benefit_id": 2,
+      "custom_description": "Improves skin complexion, reduces pigmentation, and adds natural radiance."
+    }
+  ],
+  "product_usage_types": [
+    {
+      "product_id": 2,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 3,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 4,
+      "usage_type_id": 2
+    },
+    {
+      "product_id": 4,
+      "usage_type_id": 3
+    },
+    {
+      "product_id": 5,
+      "usage_type_id": 2
+    },
+    {
+      "product_id": 5,
+      "usage_type_id": 3
+    },
+    {
+      "product_id": 6,
+      "usage_type_id": 3
+    },
+    {
+      "product_id": 7,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 7,
+      "usage_type_id": 4
+    },
+    {
+      "product_id": 8,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 9,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 9,
+      "usage_type_id": 4
+    },
+    {
+      "product_id": 10,
+      "usage_type_id": 3
+    },
+    {
+      "product_id": 1,
+      "usage_type_id": 1,
+      "custom_description": "Designed for safe, continuous everyday usage in food or lifestyle."
+    },
+    {
+      "product_id": 1,
+      "usage_type_id": 2,
+      "custom_description": "Concentrated natural remedies for healing, soothing, and physical therapy."
+    },
+    {
+      "product_id": 1,
+      "usage_type_id": 3,
+      "custom_description": "Luxury cosmetic and skin-nourishment applications."
+    }
+  ],
+  "product_related": [
+    {
+      "product_id": 1,
+      "related_product_id": 2
+    },
+    {
+      "product_id": 2,
+      "related_product_id": 1
+    },
+    {
+      "product_id": 4,
+      "related_product_id": 5
+    },
+    {
+      "product_id": 5,
+      "related_product_id": 4
+    },
+    {
+      "product_id": 6,
+      "related_product_id": 10
+    },
+    {
+      "product_id": 7,
+      "related_product_id": 2
+    },
+    {
+      "product_id": 8,
+      "related_product_id": 3
+    },
+    {
+      "product_id": 9,
+      "related_product_id": 7
+    },
+    {
+      "product_id": 10,
+      "related_product_id": 6
+    }
+  ],
+  "blogs": [
+    {
+      "id": 1,
+      "title": "The Saffron Heritage: Exploring Kashmir's Golden Harvest",
+      "slug": "saffron-heritage-kashmir-golden-harvest",
+      "content": "## The Red Gold of Pampore\n\nFor centuries, the saffron of Kashmir has stood as a global benchmark of ultimate flavor, aroma, and healing potency. In the plateau fields of Pampore, just outside Srinagar, local families continue to cultivate this rare crop utilizing techniques that date back over thousands of years.\n\n### Why Kashmiri Saffron is Unique\n\nUnlike saffron grown in other regions, Kashmiri Saffron is uniquely rich in active elements like **Crocin** (responsible for the deep red hue), **Picrocrocin** (rendering the distinct bittersweet flavor), and **Safranal** (governing the luxurious fragrance). The high-altitude clay soil combined with cool weather cycles provides the optimal environment for producing these powerful stigmas.\n\n### The Art of Hand Harvesting\n\nSaffron harvesting is an exercise in extreme patience. During late autumn, the crocus flowers bloom in bright purple carpets. Flower pluckers must rise at dawn, collecting the blossoms before the sun opens the petals too wide. The delicate dark red stigmas are then separated manually in homesteads by local artisan women, demanding extreme precision and focus.\n\n### Integrating Saffron into your Wellness Routine\n\n1. **Saffron Tea (Kahwa):** Brew natural green tea leaves with cinnamon, crushed cardamom, Saffron strands, and sliced almonds.\n2. **Skincare:** Infuse 3-4 strands in fresh goat milk or organic rosewater and apply as a mask to target pigmentation and reveal an organic skin glow.\n3. **Nightly Elixir:** Steep 2 strands in warm almond milk before sleep to calm the nervous system and promote peaceful rest.",
+      "featured_image": "/images/blogs/saffron-harvest.jpg",
+      "category": "Organic Living",
+      "tags": "Saffron,Kashmir,Wellness,Skincare",
+      "author": "Ayesha Mir (Lead Ethnobotanist)",
+      "publish_date": "2026-05-15",
+      "status": "published",
+      "seo_title": "Kashmiri Saffron Heritage: Pampore Organic Cultivation",
+      "seo_description": "Discover the heritage of Kashmiri Saffron, the traditional hand-harvesting process in Pampore, and how to use this luxury organic spice in wellness.",
+      "related_products": "[1,2]",
+      "related_materials": "[1]"
+    },
+    {
+      "id": 2,
+      "title": "Preserving Heritage: The Untold Story of Walnut Woodcraft",
+      "slug": "preserving-heritage-walnut-woodcraft-kashmir",
+      "content": "## The Sacred Timber of the Valley\n\nWalnut wood carving represents one of the most culturally revered and protected artisan skills of Jammu & Kashmir. Handed down across generations of woodcarvers, this craft transforms logs of slow-grown walnut trees into beautiful heirloom accessories.\n\n### Why Walnut Wood?\n\nKashmiri walnut trees (*Juglans regia*) grow under cold climatic cycles, resulting in extremely dense wood structures with highly unique dark brown and charcoal grain lines. The wood is naturally resistant to woodworms and does not easily warp, making it perfect for food-safe kitchenware and ornate furniture.\n\n### The Craftsmanship Process\n\n1. **Natural Seasoning:** Before a carver's chisel ever touches the wood, the logs must be dried naturally for two to five years. This stabilizes the fibers.\n2. **Khatamband and Carving:** Master artisans use specialized chisels to carve intricate nature patterns like Chinar leaves, grapes, and iris flowers into the dense timber.\n3. **Organic Finish:** We avoid toxic chemical varnishes. Instead, our artisans polish the bowls using natural walnut kernels wrapped in clean muslin cloth, releasing high-purity oils directly into the wood fiber.\n\n### Sustainable Stewardship\n\nAt Kashmiri Organic, sustainability is our core promise. We only source walnut wood from trees that have naturally ceased bearing fruit or have been felled by seasonal weather, and we plant three new saplings in our co-operative orchards for each tree used.",
+      "featured_image": "/images/blogs/walnut-craft.jpg",
+      "category": "Natural Living",
+      "tags": "Walnut Wood,Craftsmanship,Sustainability,Heritage",
+      "author": "Ghulam Rasool (Master Carver)",
+      "publish_date": "2026-05-20",
+      "status": "published",
+      "seo_title": "Kashmiri Walnut Woodcraft: Sustainable Handcrafted Luxury",
+      "seo_description": "An inside look at the historical art of walnut wood carving in Kashmir, the seasoning process, and the ethical forestry practices supporting our local artisans.",
+      "related_products": "[3,4]",
+      "related_materials": "[3,4]"
+    }
+  ],
+  "inquiries": [
+    {
+      "id": 1,
+      "name": "kishan shinde",
+      "email": "admin@freshcart.com",
+      "phone": "+917303955134",
+      "company_name": "sdddsf",
+      "inquiry_type": "contact",
+      "message": "asdsdnsjd dksdbndj",
+      "product_id": 4,
+      "status": "reviewed",
+      "created_at": "2026-05-30T01:46:15.542Z"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Clara Dupont",
+      "role": "Sourcing Director, L'Élixir Organic (France)",
+      "content": "We source Kashmiri Saffron and Wild Lavender Oil from Kashmiri Organic for our premium botanical skincare lines. The quality is exceptional, and their detailed laboratory reports and shipping logistics make B2B export extremely seamless.",
+      "rating": 5,
+      "image_url": "/images/testimonials/clara.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Rajesh Malhotra",
+      "role": "Founder, Himalaya Wellness Retreats",
+      "content": "Our wellness sanctuaries utilize Kashmiri Organic forest honey and walnut woodware. Our guests frequently praise the purity of the honey. Truly the gold standard of organic heritage products.",
+      "rating": 5,
+      "image_url": "/images/testimonials/rajesh.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Emma Wilson",
+      "role": "Connoisseur & Naturalist (United Kingdom)",
+      "content": "The hand-carved walnut fruit bowl is an absolute masterpiece in my dining room. Knowing the wood is sourced sustainably and helps support local Kashmiri craft families makes it feel incredibly special.",
+      "rating": 5,
+      "image_url": "/images/testimonials/emma.jpg"
+    }
+  ],
+  "certifications": [
+    {
+      "id": 1,
+      "name": "India Organic",
+      "description": "Certified under the National Programme for Organic Production (NPOP) rules.",
+      "image_url": "/images/certs/india-organic.png"
+    },
+    {
+      "id": 2,
+      "name": "USDA Organic",
+      "description": "Certified organic in accordance with US Department of Agriculture standards.",
+      "image_url": "/images/certs/usda.png"
+    },
+    {
+      "id": 3,
+      "name": "ISO 22000:2018",
+      "description": "Certified International Food Safety Management Standards for packing and processing.",
+      "image_url": "/images/certs/iso.png"
+    },
+    {
+      "id": 4,
+      "name": "GI Tag Protection",
+      "description": "Geographical Indication certification protecting authentic origin products of Jammu & Kashmir.",
+      "image_url": "/images/certs/gi-tag.png"
+    }
+  ],
+  "seo": [
+    {
+      "id": 1,
+      "path": "/",
+      "title": "Kashmiri Organic | Premium Saffron, Forest Honey & Handcrafted Woodware",
+      "description": "Discover the pure, luxurious organic heritage of Kashmir. Exporting Grade A+ Saffron, raw forest honey, cold-pressed walnut oil, and handcrafted walnut wood products.",
+      "keywords": "kashmiri saffron, organic honey, walnut wood bowl, kashmir organic, bulk saffron export, premium cold pressed oils",
+      "og_image": "/images/og-home.jpg"
+    }
+  ],
+  "site_settings": [
+    {
+      "id": 1,
+      "setting_key": "site_name",
+      "setting_value": "Kashmiri Organic"
+    },
+    {
+      "id": 2,
+      "setting_key": "site_email",
+      "setting_value": "info@kashmiriorganic.com"
+    },
+    {
+      "id": 3,
+      "setting_key": "site_phone",
+      "setting_value": "+91 98765 43210"
+    },
+    {
+      "id": 4,
+      "setting_key": "site_whatsapp",
+      "setting_value": "+919876543210"
+    },
+    {
+      "id": 5,
+      "setting_key": "site_address",
+      "setting_value": "Pampore Organic Farms, Highway 1A, Pulwama, Jammu & Kashmir, 192121"
+    },
+    {
+      "id": 6,
+      "setting_key": "instagram_url",
+      "setting_value": "https://instagram.com/kashmiriorganic"
+    }
+  ]
+}

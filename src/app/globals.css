@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F7F3EB; /* Cream White background */
+  --foreground: #1E1E1E; /* Primary text */
+  
+  --font-inter: var(--font-inter);
+  --font-playfair: var(--font-playfair);
+}
+
+@theme {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  
+  --color-brand-green: #2F4F3E;
+  --color-brand-gold: #C68A2D;
+  --color-brand-brown: #6B4F3A;
+  --color-brand-sage: #8C9A73;
+  --color-bg-cream: #F7F3EB;
+  --color-bg-beige: #EFE6D6;
+  --color-bg-mist: #F4F5F2;
+  
+  --color-text-primary: #1E1E1E;
+  --color-text-secondary: #5F5F5F;
+  --color-text-muted: #7A7A7A;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    background-color: var(--color-bg-cream);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+    color: var(--color-brand-green);
+  }
+}
+
+/* Custom premium transitions and visual effects */
+.luxury-shadow {
+  box-shadow: 0 4px 30px rgba(47, 79, 62, 0.04);
+}
+
+.luxury-shadow-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-shadow-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(47, 79, 62, 0.08);
+}
+
+.glassmorphism {
+  background: rgba(247, 243, 235, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(47, 79, 62, 0.06);
+}
+
+.glassmorphism-dark {
+  background: rgba(47, 79, 62, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(198, 138, 45, 0.1);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C68A2D 0%, #A26B1F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.green-gradient-text {
+  background: linear-gradient(135deg, #2F4F3E 0%, #1A3025 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-bg-cream);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-brand-green);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-gold);
+}
+
+/* Hide all scrollbars globally while keeping scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+
+/* Custom Swiper Styles for Kashmiri Organic */
+.materials-swiper {
+  position: relative;
+  width: 100%;
+}
+
+/* Custom Swiper Pagination Bullets */
+.swiper-pagination-materials .swiper-pagination-bullet {
+  background: var(--color-brand-green);
+  opacity: 0.35;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  cursor: pointer;
+}
+
+.swiper-pagination-materials .swiper-pagination-bullet-active {
+  background: var(--color-brand-gold);
+  opacity: 1;
+  width: 24px;
+  border-radius: 4px;
+}
+
+

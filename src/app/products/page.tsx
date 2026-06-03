@@ -12,10 +12,15 @@ export const metadata = {
 
 export default async function ProductsPage() {
   // Fetch data on the server using parameterized SQL database clients
-  const products = await executeQuery<Product[]>('SELECT * FROM products');
+  const allProducts = await executeQuery<Product[]>('SELECT * FROM products');
   const categories = await executeQuery<Category[]>('SELECT * FROM categories');
   const materials = await executeQuery<Material[]>('SELECT * FROM materials');
   const productTypes = await executeQuery<ProductType[]>('SELECT * FROM product_types');
+
+  // Filter products to exclude seasonal products. Only display products with season as 'all' or empty.
+  const products = allProducts.filter(
+    (p) => !p.season || p.season.toLowerCase() === 'all' || p.season.trim() === ''
+  );
 
   return (
     <ProductsCatalogWrapper

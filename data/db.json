@@ -209,7 +209,8 @@
       "discount_price": null,
       "sku": "KO-SAF-001",
       "stock": 100,
-      "sub_category": "Special Reserve"
+      "sub_category": "Special Reserve",
+      "season": "summer"
     },
     {
       "id": 2,
@@ -225,7 +226,8 @@
       "moq": "100 jars (Retail) / 500kg (Bulk Export)",
       "packaging": "Food-grade glass jars with cork lids and rustic jute neck wrap.",
       "shipping": "Secured vacuum sealed pallets for international sea and air shipping.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "spring"
     },
     {
       "id": 3,
@@ -241,7 +243,8 @@
       "moq": "10 pieces",
       "packaging": "Custom felt-lined wooden crates with heavy eco-friendly cardboard layers.",
       "shipping": "Safe air/sea freight shipping with certified termite-fumigation certificate.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "all"
     },
     {
       "id": 4,
@@ -257,7 +260,8 @@
       "moq": "50 litres (Bulk) / 200 bottles (Retail)",
       "packaging": "Amber glass dropper bottles with gold seals / HDPE bulk food containers.",
       "shipping": "Leak-proof thermal-insulated transport packaging.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "autumn"
     },
     {
       "id": 5,
@@ -273,7 +277,8 @@
       "moq": "100 bottles / 10 Litres (Bulk)",
       "packaging": "UV-blocking cobalt blue glass bottles with child-safety tamper drop seals.",
       "shipping": "Safe air transport certified under IATA hazardous liquid classifications.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "summer"
     },
     {
       "id": 6,
@@ -289,7 +294,8 @@
       "moq": "50 bars",
       "packaging": "Individually wrapped in recycled handmade paper box with gold-foil seal.",
       "shipping": "Standard ground and air transit.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "autumn"
     },
     {
       "id": 7,
@@ -305,7 +311,8 @@
       "moq": "50 jars",
       "packaging": "Hexagonal glass jars with gold lids and hand-tied tag locks.",
       "shipping": "Thermal protected container crates.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "winter"
     },
     {
       "id": 8,
@@ -321,7 +328,8 @@
       "moq": "20 sets",
       "packaging": "Wrapped in muslin cloth inside a heavy recycled craft paper tube.",
       "shipping": "Safe custom carton pallets.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "all"
     },
     {
       "id": 9,
@@ -337,7 +345,8 @@
       "moq": "500 grams",
       "packaging": "Vacuum-sealed air-tight ambient packages within premium wooden gift boxes.",
       "shipping": "Direct air courier to preserve product dryness.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "spring"
     },
     {
       "id": 10,
@@ -353,7 +362,8 @@
       "moq": "100 bottles",
       "packaging": "Tamper-resistant gold dropper bottle inside a velvet-lined case.",
       "shipping": "Secure padded parcels for international safety.",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "created_at": "2026-05-29T20:20:24.000Z",
+      "season": "autumn"
     }
   ],
   "product_categories": [
@@ -596,6 +606,11 @@
       "product_id": 1,
       "benefit_id": 2,
       "custom_description": "Improves skin complexion, reduces pigmentation, and adds natural radiance."
+    },
+    {
+      "product_id": 1,
+      "benefit_id": 4,
+      "custom_description": ""
     }
   ],
   "product_usage_types": [

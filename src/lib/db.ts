@@ -73,6 +73,7 @@ export interface Product {
   discount_price?: number | null;
   sku?: string;
   stock?: number;
+  season?: string; // 'spring' | 'summer' | 'autumn' | 'winter' | 'all'
   
   // Relations mapped in queries
   categories?: Category[];
@@ -840,6 +841,7 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         certified: params[14] ? 1 : 0,
         export_quality: params[15] ? 1 : 0,
         sub_category: params[16] || '',
+        season: params[17] || 'all',
         created_at: new Date().toISOString()
       };
       db.products.push(newProduct);
@@ -956,7 +958,7 @@ function simulateSQLQuery(sql: string, params: any[]): any {
     }
 
     if (normalizedSql.includes('update products')) {
-      const id = Number(params[17]);
+      const id = Number(params[18]);
       const pIdx = db.products.findIndex(p => p.id === id);
       if (pIdx > -1) {
         db.products[pIdx] = {
@@ -977,7 +979,8 @@ function simulateSQLQuery(sql: string, params: any[]): any {
           availability: params[13],
           certified: params[14] ? 1 : 0,
           export_quality: params[15] ? 1 : 0,
-          sub_category: params[16]
+          sub_category: params[16],
+          season: params[17] || 'all'
         };
         saveJsonDb(db);
         return { affectedRows: 1 };
@@ -1349,6 +1352,8 @@ CREATE TABLE IF NOT EXISTS products (
   moq VARCHAR(100),
   packaging TEXT,
   shipping TEXT,
+  sub_category VARCHAR(255) DEFAULT '',
+  season VARCHAR(100) DEFAULT 'all',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX (slug)
 );

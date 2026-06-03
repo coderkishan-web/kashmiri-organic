@@ -10,13 +10,15 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showMegaMenu, setShowMegaMenu] = useState(false);
+  const [showArtisansDropdown, setShowArtisansDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
-  // Hover timer ref to establish a smooth interactive hover bridge
+  // Hover timer refs to establish a smooth interactive hover bridge
   const megaMenuTimerRef = React.useRef<any>(null);
+  const artisansTimerRef = React.useRef<any>(null);
 
   const openMega = () => {
     if (megaMenuTimerRef.current) clearTimeout(megaMenuTimerRef.current);
@@ -27,6 +29,18 @@ export default function Navbar() {
     if (megaMenuTimerRef.current) clearTimeout(megaMenuTimerRef.current);
     megaMenuTimerRef.current = setTimeout(() => {
       setShowMegaMenu(false);
+    }, 150);
+  };
+
+  const openArtisans = () => {
+    if (artisansTimerRef.current) clearTimeout(artisansTimerRef.current);
+    setShowArtisansDropdown(true);
+  };
+
+  const closeArtisans = () => {
+    if (artisansTimerRef.current) clearTimeout(artisansTimerRef.current);
+    artisansTimerRef.current = setTimeout(() => {
+      setShowArtisansDropdown(false);
     }, 150);
   };
 
@@ -43,6 +57,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (megaMenuTimerRef.current) clearTimeout(megaMenuTimerRef.current);
+      if (artisansTimerRef.current) clearTimeout(artisansTimerRef.current);
     };
   }, []);
 
@@ -50,6 +65,7 @@ export default function Navbar() {
   useEffect(() => {
     setIsOpen(false);
     setShowMegaMenu(false);
+    setShowArtisansDropdown(false);
     setSearchLoading(false);
   }, [pathname]);
 
@@ -64,11 +80,21 @@ export default function Navbar() {
 
   // Exactly requested links
   const navLinks = [
-    { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
+    { name: 'Shop by Season', href: '/shop-by-season' },
     { name: 'Products', href: '/products', hasMega: true },
     { name: 'Blogs', href: '/blogs' },
+    { name: 'Artisans', href: '/artisans', hasDropdown: false },
+    { name: 'Culture', href: '/culture' },
+    { name: 'Custom Pashmina', href: '/custom-pashmina' },
     { name: 'Contact Us', href: '/contact' },
+  ];
+
+  const artisanGuilds = [
+    { name: 'Pashmina Weavers', slug: 'weavers', desc: 'Masters of handloom Kani and Sozni shawls.', icon: '🧣' },
+    { name: 'Walnut Wood Carvers', slug: 'carvers', desc: 'Crafting premium GI-tagged walnut decor.', icon: '🪵' },
+    { name: 'Saffron Farmers', slug: 'farmers', desc: 'Traditional harvesters of Pampore gold.', icon: '🌸' },
+    { name: 'Nomadic Beekeepers', slug: 'beekeepers', desc: 'Guardians of raw high-altitude forest hives.', icon: '🐝' },
   ];
 
   const categories = [
@@ -116,32 +142,71 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <div
                 key={link.name}
                 className="relative"
-                onMouseEnter={() => link.hasMega && openMega()}
-                onMouseLeave={() => link.hasMega && closeMega()}
+                onMouseEnter={() => {
+                  if (link.hasMega) openMega();
+                  if (link.hasDropdown) openArtisans();
+                }}
+                onMouseLeave={() => {
+                  if (link.hasMega) closeMega();
+                  if (link.hasDropdown) closeArtisans();
+                }}
               >
                 <Link
                   href={link.href}
-                  className={`text-sm font-medium tracking-wide transition-colors duration-300 flex items-center gap-1 py-2 ${
+                  className={`text-xs font-semibold uppercase tracking-wider transition-colors duration-300 flex items-center gap-1 py-2 ${
                     pathname === link.href
-                      ? 'text-brand-green font-semibold border-b-2 border-brand-gold'
+                      ? 'text-brand-green font-bold border-b-2 border-brand-gold'
                       : 'text-text-secondary hover:text-brand-green'
                   }`}
                 >
                   {link.name}
-                  {link.hasMega && (
+                  {(link.hasMega || link.hasDropdown) && (
                     <motion.div
-                      animate={{ rotate: showMegaMenu ? 180 : 0 }}
+                      animate={{ rotate: (link.hasMega ? showMegaMenu : showArtisansDropdown) ? 180 : 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     >
-                      <ChevronDown className="w-4 h-4 text-brand-gold opacity-80" />
+                      <ChevronDown className="w-3.5 h-3.5 text-brand-gold opacity-80" />
                     </motion.div>
                   )}
                 </Link>
+
+                {link.hasDropdown && (
+                  <AnimatePresence>
+                    {showArtisansDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="absolute left-0 mt-2 w-72 bg-bg-cream border border-brand-green/15 rounded-2xl shadow-2xl p-4 z-50 flex flex-col gap-1.5"
+                      >
+                        {artisanGuilds.map((guild) => (
+                          <Link
+                            key={guild.slug}
+                            href={`/artisans?guild=${guild.slug}`}
+                            className="group flex items-start gap-3 p-2 hover:bg-bg-beige/40 rounded-xl transition-all duration-300"
+                          >
+                            <span className="text-lg p-1 bg-bg-beige/65 rounded-lg group-hover:bg-brand-gold/25 transition-colors shrink-0">
+                              {guild.icon}
+                            </span>
+                            <div className="text-left">
+                              <span className="text-xs font-semibold text-brand-green group-hover:text-brand-gold transition-colors duration-300 block">
+                                {guild.name}
+                              </span>
+                              <span className="text-[10px] text-text-muted font-light block leading-tight mt-0.5">
+                                {guild.desc}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
               </div>
             ))}
           </nav>
@@ -337,6 +402,20 @@ export default function Navbar() {
                           >
                             <span>{cat.icon}</span>
                             <span>{cat.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                    {link.hasDropdown && (
+                      <div className="mt-4 pl-4 grid gap-3 border-l-2 border-brand-gold/30">
+                        {artisanGuilds.map((guild) => (
+                          <Link
+                            key={guild.slug}
+                            href={`/artisans?guild=${guild.slug}`}
+                            className="text-sm font-semibold text-text-secondary hover:text-brand-green flex items-center gap-2"
+                          >
+                            <span>{guild.icon}</span>
+                            <span>{guild.name}</span>
                           </Link>
                         ))}
                       </div>

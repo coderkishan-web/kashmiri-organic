@@ -330,7 +330,8 @@ export default function AdminDashboardPage() {
       usage_type_ids: selectedUsageTypeIds,
       benefit_custom_descriptions: benefitCustomDescs,
       usage_type_custom_descriptions: usageTypeCustomDescs,
-      sub_category: formData.get('sub_category')
+      sub_category: formData.get('sub_category'),
+      season: formData.get('season')
     };
 
     try {
@@ -1589,6 +1590,21 @@ export default function AdminDashboardPage() {
                   placeholder="https://images.unsplash.com/photo-..."
                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold"
                 />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Harvest Season</label>
+                <select
+                  name="season"
+                  defaultValue={editingProduct?.season || 'all'}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold text-xs h-[38px] cursor-pointer"
+                >
+                  <option value="all">All Seasons</option>
+                  <option value="spring">Spring (Sont)</option>
+                  <option value="summer">Summer (Grishm)</option>
+                  <option value="autumn">Autumn (Harud)</option>
+                  <option value="winter">Winter (Wand)</option>
+                </select>
               </div>
 
               <div className="flex flex-col sm:col-span-2 pt-2 border-t border-brand-green/5">

@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       benefit_ids,
       usage_type_ids,
       sub_category,
+      season,
       benefit_custom_descriptions,
       usage_type_custom_descriptions
     } = body;
@@ -74,8 +75,8 @@ export async function POST(req: NextRequest) {
     }
 
     const sql = `
-      INSERT INTO products (name, slug, short_description, long_description, image_url, gallery_urls, price, discount_price, sku, stock, moq, packaging, shipping, availability, certified, export_quality, sub_category)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (name, slug, short_description, long_description, image_url, gallery_urls, price, discount_price, sku, stock, moq, packaging, shipping, availability, certified, export_quality, sub_category, season)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       name.trim(),
@@ -94,7 +95,8 @@ export async function POST(req: NextRequest) {
       availability || 'retail,bulk,export',
       certified ? 1 : 0,
       export_quality ? 1 : 0,
-      sub_category ? sub_category.trim() : ''
+      sub_category ? sub_category.trim() : '',
+      season || 'all'
     ];
 
     const result = await executeQuery<any>(sql, params);
@@ -165,6 +167,7 @@ export async function PUT(req: NextRequest) {
       benefit_ids,
       usage_type_ids,
       sub_category,
+      season,
       benefit_custom_descriptions,
       usage_type_custom_descriptions
     } = body;
@@ -175,7 +178,7 @@ export async function PUT(req: NextRequest) {
 
     const sql = `
       UPDATE products 
-      SET name = ?, slug = ?, short_description = ?, long_description = ?, image_url = ?, gallery_urls = ?, price = ?, discount_price = ?, sku = ?, stock = ?, moq = ?, packaging = ?, shipping = ?, availability = ?, certified = ?, export_quality = ?, sub_category = ?
+      SET name = ?, slug = ?, short_description = ?, long_description = ?, image_url = ?, gallery_urls = ?, price = ?, discount_price = ?, sku = ?, stock = ?, moq = ?, packaging = ?, shipping = ?, availability = ?, certified = ?, export_quality = ?, sub_category = ?, season = ?
       WHERE id = ?
     `;
     const params = [
@@ -196,6 +199,7 @@ export async function PUT(req: NextRequest) {
       certified ? 1 : 0,
       export_quality ? 1 : 0,
       sub_category ? sub_category.trim() : '',
+      season || 'all',
       Number(id)
     ];
 

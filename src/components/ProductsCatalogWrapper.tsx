@@ -346,12 +346,12 @@ export default function ProductsCatalogWrapper({
                       {/* Media container */}
                       <div className="relative aspect-[4/3] overflow-hidden bg-bg-mist border-b border-brand-green/5">
                         {prod.export_quality === 1 && (
-                          <span className="absolute top-4 left-4 z-10 bg-brand-green text-brand-gold text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                          <span className="absolute top-4 left-4 z-10 bg-brand-green text-brand-gold text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
                             Premium Export
                           </span>
                         )}
                         {prod.certified === 1 && (
-                          <span className="absolute top-4 right-4 z-10 bg-brand-gold text-brand-green text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded flex items-center gap-0.5">
+                          <span className="absolute top-4 right-4 z-10 bg-brand-gold text-brand-green text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded flex items-center gap-0.5 shadow-sm">
                             <BadgeCheck className="w-3.5 h-3.5" /> USDA Organic
                           </span>
                         )}
@@ -371,6 +371,12 @@ export default function ProductsCatalogWrapper({
                             <span className="w-1 h-1 bg-text-muted rounded-full"></span>
                             <span>{prod.materials?.[0]?.name || 'Origin Source'}</span>
                           </div>
+
+                          {prod.season && prod.season.toLowerCase() !== 'all' && prod.season.trim() !== '' && (
+                            <span className="inline-block text-[8px] bg-brand-gold/10 text-brand-gold font-bold uppercase tracking-widest px-2 py-0.5 rounded self-start mt-0.5">
+                              Seasonal ({prod.season})
+                            </span>
+                          )}
                           
                           <h3 className="font-serif text-xl font-bold text-brand-green hover:text-brand-gold transition-colors leading-snug">
                             <Link href={`/products/${prod.slug}`}>{prod.name}</Link>

@@ -530,7 +530,8 @@ export default function AdminDashboardPage() {
       benefits: formData.get('benefits'),
       image_url: formData.get('image_url'),
       history: formData.get('history'),
-      gallery_urls: formData.get('gallery_urls')
+      gallery_urls: formData.get('gallery_urls'),
+      extraction_story: formData.get('extraction_story')
     };
 
     try {
@@ -2062,7 +2063,7 @@ export default function AdminDashboardPage() {
       {/* MODAL 4: CREATE / EDIT HARVEST MATERIAL */}
       {showMaterialModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowMaterialModal(false)}>
-          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             
             <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
                <h3 className="font-serif text-2xl font-bold text-brand-green">
@@ -2187,6 +2188,17 @@ export default function AdminDashboardPage() {
                    defaultValue={editingMaterial?.gallery_urls || '[]'}
                    placeholder='e.g. ["url1", "url2"]'
                    className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold resize-none font-mono"
+                 ></textarea>
+               </div>
+
+               <div className="flex flex-col sm:col-span-2">
+                 <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Production & Extraction Story (Storytelling Format)</label>
+                 <textarea
+                   name="extraction_story"
+                   rows={4}
+                   defaultValue={editingMaterial?.extraction_story || ''}
+                   placeholder="Describe how the material is harvested and extracted in a natural, story-driven format..."
+                   className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 text-text-primary focus:outline-none focus:border-brand-gold resize-none"
                  ></textarea>
                </div>
 

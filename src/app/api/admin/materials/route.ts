@@ -42,15 +42,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls } = body;
+    const { name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls, extraction_story } = body;
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'Name and slug are required parameters.' }, { status: 400 });
     }
 
     const sql = `
-      INSERT INTO materials (name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO materials (name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls, extraction_story)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       name.trim(),
@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
       benefits ? benefits.trim() : '',
       image_url || 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80',
       history ? history.trim() : '',
-      gallery_urls || JSON.stringify([])
+      gallery_urls || JSON.stringify([]),
+      extraction_story ? extraction_story.trim() : ''
     ];
 
     const result = await executeQuery<any>(sql, params);
@@ -82,7 +83,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls } = body;
+    const { id, name, slug, overview, origin, manufacturing_process, sustainability, benefits, image_url, history, gallery_urls, extraction_story } = body;
 
     if (!id || !name || !slug) {
       return NextResponse.json({ error: 'Entity ID, name and slug are required to perform update.' }, { status: 400 });
@@ -90,7 +91,7 @@ export async function PUT(req: NextRequest) {
 
     const sql = `
       UPDATE materials 
-      SET name = ?, slug = ?, overview = ?, origin = ?, manufacturing_process = ?, sustainability = ?, benefits = ?, image_url = ?, history = ?, gallery_urls = ?
+      SET name = ?, slug = ?, overview = ?, origin = ?, manufacturing_process = ?, sustainability = ?, benefits = ?, image_url = ?, history = ?, gallery_urls = ?, extraction_story = ?
       WHERE id = ?
     `;
     const params = [
@@ -104,6 +105,7 @@ export async function PUT(req: NextRequest) {
       image_url,
       history ? history.trim() : '',
       gallery_urls || JSON.stringify([]),
+      extraction_story ? extraction_story.trim() : '',
       Number(id)
     ];
 

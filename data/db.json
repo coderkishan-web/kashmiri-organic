@@ -76,14 +76,17 @@
   "materials": [
     {
       "id": 1,
-      "name": "Saffron",
+      "name": "Saffron Threads",
       "slug": "saffron",
       "overview": "Kashmiri Saffron (Lacha or Mongra) is globally celebrated for its dark crimson strands, strong aroma, and unmatched medical values. Grown in the fields of Pampore, it is the most premium saffron in the world.",
       "origin": "Pampore Saffron Fields, Kashmir Valley (Altitude: 1,600m)",
       "manufacturing_process": "Harvested exclusively by hand during a short two-week blooming window in autumn. Strands are carefully separated and shade-dried to lock in maximum crocin content.",
       "sustainability": "100% dry-farmed using traditional heritage methods passed down through generations. No chemicals or synthetic boosters are used.",
       "benefits": "Powerful antioxidant, enhances skin glow and complexion, boosts mood and memory, supports cardiovascular health and acts as an organic immunity booster.",
-      "image_url": "/images/materials/saffron.jpg"
+      "image_url": "/images/materials/saffron.jpg",
+      "extraction_story": "Under the crisp autumn sky, Pampore's plateaus bloom into a sea of purple crocus blossoms. The harvest begins at the break of dawn, before the morning sun can wither the delicate stigmas. Gatherers walk slowly through the purple fields, hand-picking each blossom with reverent care. Later in the village homes, under soft lights, families gather to separate the precious crimson threads from the petals. It takes over 75,000 hand-picked blossoms to yield just one single pound of Mongra saffron. These threads are then carefully shade-dried over heated charcoal beds, locking in the natural crocin and rich honeyed aroma. Tested and Verified.",
+      "history": "",
+      "gallery_urls": "[]"
     },
     {
       "id": 2,
@@ -94,7 +97,8 @@
       "manufacturing_process": "Ethically harvested by local nomadic beekeepers. Coarse-filtered once through organic cotton mesh to remove large particles without heat treatment or micro-filtration.",
       "sustainability": "Bee-friendly and cruelty-free honey harvesting. Bees are nurtured naturally in organic hives, maintaining local agricultural biodiversity.",
       "benefits": "Natural prebiotic, rapid energy source, organic cough suppressant, excellent wound healer, and premium sugar substitute rich in wild floral trace minerals.",
-      "image_url": "/images/materials/honey.jpg"
+      "image_url": "/images/materials/honey.jpg",
+      "extraction_story": "Deep in the remote pine and acacia forests of Kupwara, wild mountain bees build their hives on towering cliffside branches and ancient trees. Sourced during late spring when the acacia flowers are in full bloom, our local gatherers hike into the wilderness using traditional smoke-calming methods to retrieve the golden combs. The honey is extracted using simple, cold-gravity press methods, avoiding any heating or micro-filtering. This raw, unpasteurized process ensures every jar retains the natural forest pollen, wild active enzymes, and floral fragrance of the Himalayan highlands."
     },
     {
       "id": 3,
@@ -105,7 +109,8 @@
       "manufacturing_process": "Walnut logs are naturally seasoned for 2 to 5 years to prevent cracking. Talented master artisans then carve them by hand using specialized iron chisels.",
       "sustainability": "Felled strictly from dead or licensed senior walnut trees. We actively replant three walnut saplings for every tree utilized.",
       "benefits": "Food-safe natural coating, generation-lasting durability, beautiful organic centerpiece decor, biodegradable kitchenware, and support for rural woodcraft guilds.",
-      "image_url": "/images/materials/wood.jpg"
+      "image_url": "/images/materials/wood.jpg",
+      "extraction_story": "In the high-altitude forests of Kashmir, master woodcarvers select walnut logs from licensed, mature trees that have naturally fallen or reached the end of their lifecycle. These logs are seasoned in shaded outdoor vaults for two to five years, allowing the wood's moisture content to settle naturally and prevent future warping. Once fully cured, master artisans carve the seasoned walnut blocks by hand using iron chisels, shaping them into elegant organic bowls, panels, and utensils. Each piece is hand-rubbed with pure apricot kernel oil, enhancing the rich, dark swirling grains of the walnut heartwood."
     },
     {
       "id": 4,
@@ -116,7 +121,8 @@
       "manufacturing_process": "Sun-dried slowly on traditional straw mats. Shelled carefully by hand to preserve the golden butterfly-shaped kernel halves.",
       "sustainability": "Grown under rainfed conditions with zero artificial fertilizer or pesticide use. Preserving traditional orchard ecosystems.",
       "benefits": "Excellent source of Omega-3 (ALA) fatty acids, boosts cognitive performance, lowers LDL cholesterol, and maintains perfect skin elasticity and hair health.",
-      "image_url": "/images/materials/walnut.jpg"
+      "image_url": "/images/materials/walnut.jpg",
+      "extraction_story": "During the harvest weeks of late September, walnut orchards across the Jhelum valley become lively with families gathering the fallen green-husked nuts. The walnuts are hand-sorted, and their outer shells are cracked to retrieve the rich kernels. To produce our signature walnut oil, the raw kernels are cold-pressed in traditional wooden mills ('kohlu') at slow speeds. This cold-press extraction generates zero heat, preserving the high-quality fatty acids, vitamin E, and earthy, buttery flavor profile of the high-altitude Kashmiri walnut."
     },
     {
       "id": 5,
@@ -127,7 +133,8 @@
       "manufacturing_process": "Gently hand-picked by tribal herbalists, clean washed in glacial meltwater, and solar dehydrated at low temperatures to conserve medicinal volatile oils.",
       "sustainability": "Ethical wildcrafting principles followed. We harvest less than 20% of wild herb clusters to ensure zero disruption to alpine ecosystems.",
       "benefits": "Powerful adaptogens, deep respiratory relief, profound relaxation, soothing inflammation, and excellent base for luxury botanical skincare solutions.",
-      "image_url": "/images/materials/herbs.jpg"
+      "image_url": "/images/materials/herbs.jpg",
+      "extraction_story": "High above the tree lines in the pristine alpine meadows of Gulmarg and Sonamarg, wild mountain herbs like Dandelion, Nettle, and Thyme grow in mineral-rich glacial soils. Local gatherers, who possess ancestral botanical knowledge, harvest these wild herbs sustainably by hand, taking care to leave the root systems intact for future seasons. The herbs are packed in cotton bags and dried in clean mountain shade, preserving their potent active compounds and therapeutic qualities."
     },
     {
       "id": 6,
@@ -138,7 +145,22 @@
       "manufacturing_process": "",
       "sustainability": "",
       "benefits": "",
-      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80"
+      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80",
+      "extraction_story": "At the foothills of Pahalgam, fields of premium lavender bloom into deep violet waves every July. Sourced at peak bloom when the essential oil concentration is highest, the flower heads are hand-cut by local farming cooperatives. Within hours of harvesting, the fresh lavender is steam-distilled in traditional copper alembics using pure mountain spring water. The steam gently coaxes the lavender essential oil from the flower petals, which condenses into a highly pure, sweet, herbaceous elixir valued for its calming and restorative properties."
+    },
+    {
+      "id": 7,
+      "name": "Laptop",
+      "slug": "laptop",
+      "overview": "cxz",
+      "origin": "Pahalgam Highlands, Kashmir",
+      "manufacturing_process": "dsfdgfg",
+      "sustainability": "xzcdcfdv",
+      "benefits": "dvfasfsd",
+      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80",
+      "history": "vzdfdfsd",
+      "gallery_urls": "[]",
+      "extraction_story": "dfssda"
     }
   ],
   "benefits": [

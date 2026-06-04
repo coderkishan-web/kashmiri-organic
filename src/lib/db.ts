@@ -38,6 +38,7 @@ export interface Material {
   image_url: string;
   history?: string;
   gallery_urls?: string;
+  extraction_story?: string;
 }
 
 
@@ -681,6 +682,127 @@ export async function executeQuery<T = any>(sql: string, params: any[] = []): Pr
   return simulateSQLQuery(sql, params);
 }
 
+// Unified, database-agnostic helper to load products with their complete relations hydrated
+export async function getProductsWithRelations(): Promise<Product[]> {
+  if (isMySQLConfigured()) {
+    try {
+      const dbPool = getPool();
+      
+      const [
+        [products],
+        [product_categories],
+        [categories],
+        [product_materials],
+        [materials],
+        [product_benefits],
+        [benefits],
+        [product_usage_types],
+        [usage_types],
+        [product_types_mapping],
+        [product_types],
+        [product_related]
+      ] = await Promise.all([
+        dbPool.execute('SELECT * FROM products'),
+        dbPool.execute('SELECT * FROM product_categories'),
+        dbPool.execute('SELECT * FROM categories'),
+        dbPool.execute('SELECT * FROM product_materials'),
+        dbPool.execute('SELECT * FROM materials'),
+        dbPool.execute('SELECT * FROM product_benefits'),
+        dbPool.execute('SELECT * FROM benefits'),
+        dbPool.execute('SELECT * FROM product_usage_types'),
+        dbPool.execute('SELECT * FROM usage_types'),
+        dbPool.execute('SELECT * FROM product_types_mapping'),
+        dbPool.execute('SELECT * FROM product_types'),
+        dbPool.execute('SELECT * FROM product_related')
+      ]);
+
+      const localState: any = {
+        products,
+        product_categories,
+        categories,
+        product_materials,
+        materials,
+        product_benefits,
+        benefits,
+        product_usage_types,
+        usage_types,
+        product_types_mapping,
+        product_types,
+        product_related
+      };
+
+      return (products as Product[]).map(p => hydrateProductRelations(p, localState));
+    } catch (error) {
+      console.error('MySQL getProductsWithRelations failed, falling back:', error);
+    }
+  }
+
+  // Simulator automatically hydrates relations for products in simulateSQLQuery
+  return executeQuery<Product[]>('SELECT * FROM products');
+}
+
+// Unified helper to load a single product by slug with complete relations hydrated
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  if (isMySQLConfigured()) {
+    try {
+      const dbPool = getPool();
+      const [rows] = await dbPool.execute('SELECT * FROM products WHERE slug = ?', [slug]);
+      const product = (rows as Product[])?.[0];
+      if (!product) return null;
+
+      const [
+        [product_categories],
+        [categories],
+        [product_materials],
+        [materials],
+        [product_benefits],
+        [benefits],
+        [product_usage_types],
+        [usage_types],
+        [product_types_mapping],
+        [product_types],
+        [product_related],
+        [products]
+      ] = await Promise.all([
+        dbPool.execute('SELECT * FROM product_categories WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM categories'),
+        dbPool.execute('SELECT * FROM product_materials WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM materials'),
+        dbPool.execute('SELECT * FROM product_benefits WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM benefits'),
+        dbPool.execute('SELECT * FROM product_usage_types WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM usage_types'),
+        dbPool.execute('SELECT * FROM product_types_mapping WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM product_types'),
+        dbPool.execute('SELECT * FROM product_related WHERE product_id = ?', [product.id]),
+        dbPool.execute('SELECT * FROM products')
+      ]);
+
+      const localState: any = {
+        products,
+        product_categories,
+        categories,
+        product_materials,
+        materials,
+        product_benefits,
+        benefits,
+        product_usage_types,
+        usage_types,
+        product_types_mapping,
+        product_types,
+        product_related
+      };
+
+      return hydrateProductRelations(product, localState);
+    } catch (error) {
+      console.error('MySQL getProductBySlug failed, falling back:', error);
+    }
+  }
+
+  const rows = await executeQuery<Product[]>('SELECT * FROM products WHERE slug = ?', [slug]);
+  return rows?.[0] || null;
+}
+
 // Highly robust SQL Parser & Simulator for the JSON DB
 function simulateSQLQuery(sql: string, params: any[]): any {
   const db = getJsonDb();
@@ -885,7 +1007,8 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         benefits: params[6] || '',
         image_url: params[7] || '',
         history: params[8] || '',
-        gallery_urls: params[9] || '[]'
+        gallery_urls: params[9] || '[]',
+        extraction_story: params[10] || ''
       };
       db.materials.push(newMaterial);
       saveJsonDb(db);
@@ -1013,7 +1136,7 @@ function simulateSQLQuery(sql: string, params: any[]): any {
     }
 
     if (normalizedSql.includes('update materials')) {
-      const id = Number(params[10]);
+      const id = Number(params[11]);
       const mIdx = db.materials.findIndex(m => m.id === id);
       if (mIdx > -1) {
         db.materials[mIdx] = {
@@ -1027,7 +1150,8 @@ function simulateSQLQuery(sql: string, params: any[]): any {
           benefits: params[6],
           image_url: params[7],
           history: params[8] || '',
-          gallery_urls: params[9] || '[]'
+          gallery_urls: params[9] || '[]',
+          extraction_story: params[10] || ''
         };
         saveJsonDb(db);
         return { affectedRows: 1 };
@@ -1323,6 +1447,9 @@ CREATE TABLE IF NOT EXISTS materials (
   sustainability TEXT,
   benefits TEXT,
   image_url VARCHAR(255),
+  history TEXT,
+  gallery_urls TEXT,
+  extraction_story TEXT,
   INDEX (slug)
 );
 

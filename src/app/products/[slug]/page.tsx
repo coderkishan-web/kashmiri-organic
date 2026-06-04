@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { executeQuery, Product } from '@/lib/db';
+import { executeQuery, Product, getProductBySlug } from '@/lib/db';
 import { ArrowLeft, ArrowRight, Check, Sparkles, MessageSquare, Mail, Award, Box, Truck, Download, Calendar, ShieldCheck, Tag } from 'lucide-react';
 import ProductImageGallery from '@/components/ProductImageGallery';
 
@@ -16,9 +16,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const awaitedParams = await params;
   const slug = awaitedParams.slug;
 
-  // Fetch product using raw SQL query (JSON DB simulator automatically hydrates relationships)
-  const productRows = await executeQuery<Product[]>('SELECT * FROM products WHERE slug = ?', [slug]);
-  const product = productRows?.[0];
+  // Fetch product using unified helper (ensures relationships are hydrated in MySQL & JSON DB fallback)
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();

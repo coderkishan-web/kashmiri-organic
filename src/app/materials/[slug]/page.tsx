@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { executeQuery, Material, Product, Blog } from '@/lib/db';
+import { executeQuery, Material, Product, Blog, getProductsWithRelations } from '@/lib/db';
 import { ArrowLeft, MapPin, Sparkles, Sprout, ArrowRight, BookOpen, Compass, ClipboardList } from 'lucide-react';
 
 interface MaterialDetailPageProps {
@@ -32,7 +32,7 @@ export default async function MaterialDetailPage({ params }: MaterialDetailPageP
   }
 
   // Fetch all products and blogs, then filter for relationships (works robustly in both MySQL & JSON fallback modes)
-  const allProducts = await executeQuery<Product[]>('SELECT * FROM products');
+  const allProducts = await getProductsWithRelations();
   const relatedProducts = allProducts.filter(p => p.materials?.some(m => m.slug === slug));
 
   const allBlogs = await executeQuery<Blog[]>('SELECT * FROM blogs');
@@ -67,7 +67,7 @@ export default async function MaterialDetailPage({ params }: MaterialDetailPageP
     2: 'https://images.unsplash.com/photo-1444212477490-ca407925329e?auto=format&fit=crop&w=800&q=80',
   };
 
-  const primaryBanner = originImages[material.slug] || '/images/material-detail-banner.jpg';
+  const primaryBanner = material.image_url || originImages[material.slug] || '/images/material-detail-banner.jpg';
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-mist">
@@ -215,6 +215,41 @@ export default async function MaterialDetailPage({ params }: MaterialDetailPageP
         </section>
       )}
 
+      {/* 3.8. The Harvest Story: Production & Extraction */}
+      {material.extraction_story && (
+        <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full border-t border-brand-green/5 animate-fade-in">
+          <div className="bg-bg-cream rounded-3xl p-8 sm:p-12 border border-brand-green/5 luxury-shadow flex flex-col lg:flex-row gap-10 items-center">
+            <div className="lg:w-4/12 flex flex-col justify-center items-center text-center p-6 bg-bg-mist rounded-2xl border border-brand-green/5">
+              <span className="w-16 h-16 rounded-full bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-4">
+                <BookOpen className="w-8 h-8" />
+              </span>
+              <h3 className="font-serif text-lg font-bold text-brand-green">The Harvest Story</h3>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-brand-gold mt-1">Origin & Heritage</p>
+              <div className="w-8 h-0.5 bg-brand-gold/30 my-4"></div>
+              <p className="text-xs text-text-muted font-light leading-relaxed">
+                An ancestral, hand-harvested journey passed down through generations in the valleys of Kashmir.
+              </p>
+            </div>
+            
+            <div className="lg:w-8/12 flex flex-col gap-5">
+              <span className="text-xs uppercase font-bold tracking-widest text-brand-gold">
+                Production & Extraction Narrative
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-brand-green leading-tight">
+                How our Kashmiri {material.name} is Harvested & Extracted
+              </h2>
+              <div className="w-12 h-0.5 bg-brand-gold my-1"></div>
+              
+              <div className="relative pl-6 sm:pl-8 border-l-2 border-brand-gold/35 mt-2">
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-serif italic text-justify whitespace-pre-line">
+                  "{material.extraction_story}"
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 4. Relational Products Grid */}
       {relatedProducts.length > 0 && (
         <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full border-t border-brand-green/5">
@@ -236,7 +271,7 @@ export default async function MaterialDetailPage({ params }: MaterialDetailPageP
               >
                 <div className="relative aspect-video overflow-hidden bg-bg-mist">
                   <img
-                    src={productImages[prod.id] || prod.image_url}
+                    src={prod.image_url || productImages[prod.id]}
                     alt={prod.name}
                     className="w-full h-full object-cover"
                   />
@@ -290,7 +325,7 @@ export default async function MaterialDetailPage({ params }: MaterialDetailPageP
                 >
                   <div className="sm:w-1/3 relative min-h-[120px] sm:min-h-auto rounded-xl overflow-hidden bg-bg-cream">
                     <img
-                      src={blogImages[blog.id] || blog.featured_image}
+                      src={blog.featured_image || blogImages[blog.id]}
                       alt={blog.title}
                       className="absolute inset-0 w-full h-full object-cover"
                     />

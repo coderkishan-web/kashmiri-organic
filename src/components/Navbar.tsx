@@ -13,6 +13,7 @@ export default function Navbar() {
   const [showArtisansDropdown, setShowArtisansDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -67,12 +68,14 @@ export default function Navbar() {
     setShowMegaMenu(false);
     setShowArtisansDropdown(false);
     setSearchLoading(false);
+    setIsSearchOpen(false);
   }, [pathname]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setSearchLoading(true);
+      setIsSearchOpen(false);
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
@@ -86,7 +89,6 @@ export default function Navbar() {
     { name: 'Blogs', href: '/blogs' },
     { name: 'Artisans', href: '/artisans', hasDropdown: false },
     { name: 'Culture', href: '/culture' },
-    { name: 'Custom Pashmina', href: '/custom-pashmina' },
     { name: 'Contact Us', href: '/contact' },
   ];
 
@@ -109,6 +111,7 @@ export default function Navbar() {
     { name: 'Kashmiri Saffron', slug: 'saffron', desc: 'Handpicked Pampore Mongra grade' },
     { name: 'Walnut Wood', slug: 'wood', desc: 'Carved natural woodwares' },
     { name: 'Forest Honey', slug: 'honey', desc: 'Wild high-altitude honey extraction' },
+    { name: 'Himalayan Herbs', slug: 'herbs', desc: 'Wildcrafted alpine botanical flora' },
   ];
 
   return (
@@ -213,17 +216,14 @@ export default function Navbar() {
 
           {/* Right Side: Global Search & B2B Action Button */}
           <div className="hidden lg:flex items-center gap-4">
-            {/* Search form */}
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search catalog..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-48 bg-bg-beige/40 text-sm placeholder-text-muted text-text-primary px-4 py-1.5 pl-9 rounded-full border border-brand-green/10 focus:outline-none focus:border-brand-gold focus:w-60 transition-all duration-300"
-              />
-              <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-            </form>
+            {/* Search Icon Trigger */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 text-text-secondary hover:text-brand-green transition-colors duration-300 focus:outline-none cursor-pointer"
+              aria-label="Open search dialog"
+            >
+              <Search className="w-5 h-5" />
+            </button>
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
@@ -238,9 +238,16 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center gap-3">
             {/* Mobile Search Icon */}
-            <Link href="/search" className="p-2 text-text-secondary hover:text-brand-green">
+            <button
+              onClick={() => {
+                setIsSearchOpen(true);
+                setIsOpen(false);
+              }}
+              className="p-2 text-text-secondary hover:text-brand-green focus:outline-none cursor-pointer"
+              aria-label="Open mobile search dialog"
+            >
               <Search className="w-5 h-5" />
-            </Link>
+            </button>
 
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -299,10 +306,10 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Column 2: Botanical Origins (Subcategories) */}
+              {/* Column 2: Kashmiri Materials */}
               <div className="col-span-12 md:col-span-4 border-r border-brand-green/10 pr-4">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-brand-brown mb-5 pl-2">
-                  🏔️ Kashmiri Origins
+                  🏔️ Kashmiri Materials
                 </h3>
                 <p className="text-xs text-text-muted leading-relaxed font-light mb-6 pl-2">
                   Discover the local valleys, pure alpine soil chemistry, and wild harvesting details behind our organic masterpieces.
@@ -481,6 +488,82 @@ export default function Navbar() {
                 Evaluating Sourcing Archives
               </p>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Center Search Modal Overlay */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-brand-green/85 backdrop-blur-md z-[99998] flex items-center justify-center p-4"
+            onClick={() => setIsSearchOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="bg-bg-cream max-w-2xl w-full rounded-3xl p-6 sm:p-8 border border-brand-green/10 shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsSearchOpen(false)}
+                className="absolute top-4 right-4 p-2 text-text-muted hover:text-brand-green transition-colors cursor-pointer"
+                aria-label="Close search"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Search Header */}
+              <div className="mb-6 text-center">
+                <h3 className="font-serif text-2xl font-bold text-brand-green">
+                  Valley Archive Search
+                </h3>
+                <p className="text-xs text-brand-gold font-semibold uppercase tracking-[0.2em] mt-1">
+                  Lookup Pure Kashmiri Treasures
+                </p>
+              </div>
+
+              {/* Search Form */}
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <input
+                  type="text"
+                  placeholder="Type to search saffron, honey, wood..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#FAF8F5] text-[#1B3527] text-base placeholder-text-muted px-6 py-4 pl-12 rounded-2xl border border-brand-green/15 focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 transition-all duration-300 font-serif"
+                  autoFocus
+                />
+                <Search className="w-5 h-5 text-text-muted absolute left-4 top-1/2 -translate-y-1/2" />
+              </form>
+
+              {/* Popular Searches */}
+              <div className="mt-6 pt-4 border-t border-brand-green/5 flex flex-wrap items-center justify-between gap-3 text-[11px] text-text-secondary">
+                <span className="font-medium text-brand-gold">Popular Searches:</span>
+                <div className="flex flex-wrap gap-2">
+                  {['Saffron', 'Honey', 'Walnut Bowl', 'Lavender'].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => {
+                        setSearchQuery(term);
+                        setSearchLoading(true);
+                        setIsSearchOpen(false);
+                        router.push(`/search?q=${encodeURIComponent(term)}`);
+                        setSearchQuery('');
+                      }}
+                      className="bg-[#F1EDE6]/60 hover:bg-brand-gold/15 text-brand-green px-3 py-1 rounded-full border border-brand-green/5 hover:border-brand-gold/30 transition-all cursor-pointer font-semibold"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

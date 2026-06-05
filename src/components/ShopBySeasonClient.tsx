@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ArrowRight, Heart, ShieldCheck, Leaf, Truck, Sparkles } from 'lucide-react';
 
@@ -119,7 +120,15 @@ const SEASONS: SeasonTab[] = [
 ];
 
 export default function ShopBySeasonClient({ initialProducts }: { initialProducts: Product[] }) {
+  const searchParams = useSearchParams();
+  const seasonParam = searchParams.get('season');
   const [activeSeason, setActiveSeason] = useState<string>('spring');
+
+  useEffect(() => {
+    if (seasonParam && ['spring', 'summer', 'autumn', 'winter'].includes(seasonParam.toLowerCase())) {
+      setActiveSeason(seasonParam.toLowerCase());
+    }
+  }, [seasonParam]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const selectedSeasonData = useMemo(() => {

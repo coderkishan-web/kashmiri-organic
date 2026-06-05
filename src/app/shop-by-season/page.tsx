@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { executeQuery, Product } from '@/lib/db';
 import ShopBySeasonClient from '@/components/ShopBySeasonClient';
 
@@ -11,5 +11,13 @@ export const metadata = {
 
 export default async function ShopBySeasonPage() {
   const products = await executeQuery<Product[]>('SELECT * FROM products');
-  return <ShopBySeasonClient initialProducts={products} />;
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center font-serif text-lg text-[#1B3527]">
+        Loading seasonal archive...
+      </div>
+    }>
+      <ShopBySeasonClient initialProducts={products} />
+    </Suspense>
+  );
 }

@@ -319,7 +319,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       )}
 
       {/* 5. Sub-Inquiry Form Container */}
-      <section className="py-20 bg-bg-mist px-4 sm:px-6 lg:px-8 border-t border-brand-green/5">
+      <section id="sourcing-inquiry" className="py-20 bg-bg-mist px-4 sm:px-6 lg:px-8 border-t border-brand-green/5">
         <div className="max-w-3xl mx-auto bg-bg-cream rounded-3xl p-8 sm:p-12 border border-brand-green/10 luxury-shadow">
           <div className="text-center max-w-xl mx-auto mb-8">
             <span className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-1 block">Sourcing Request</span>

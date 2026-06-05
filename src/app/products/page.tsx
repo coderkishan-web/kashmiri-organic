@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { executeQuery, Product, Category, Material, ProductType, getProductsWithRelations } from '@/lib/db';
 import ProductsCatalogWrapper from '@/components/ProductsCatalogWrapper';
 
@@ -18,11 +18,17 @@ export default async function ProductsPage() {
   const productTypes = await executeQuery<ProductType[]>('SELECT * FROM product_types');
 
   return (
-    <ProductsCatalogWrapper
-      initialProducts={allProducts}
-      categories={categories}
-      materials={materials}
-      productTypes={productTypes}
-    />
+    <Suspense fallback={
+      <div className="min-h-screen bg-bg-mist flex items-center justify-center font-serif text-lg text-brand-green">
+        Loading organic catalog...
+      </div>
+    }>
+      <ProductsCatalogWrapper
+        initialProducts={allProducts}
+        categories={categories}
+        materials={materials}
+        productTypes={productTypes}
+      />
+    </Suspense>
   );
 }

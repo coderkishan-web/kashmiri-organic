@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Product, Category, Material, ProductType } from '@/lib/db';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, BadgeCheck, RotateCcw, ShieldCheck, HelpCircle, ArrowRight, Compass } from 'lucide-react';
+import { Search, BadgeCheck, RotateCcw, ShieldCheck, HelpCircle, ArrowRight, Compass, ChevronDown } from 'lucide-react';
 
 interface ProductsCatalogWrapperProps {
   initialProducts: Product[];
@@ -22,13 +23,39 @@ export default function ProductsCatalogWrapper({
   // Client state
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('all');
+  const [selectedSeason, setSelectedSeason] = useState<string>('all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
   
   // Sidebar checkbox states
   const [onlyOrganic, setOnlyOrganic] = useState<boolean>(false);
   const [onlyExport, setOnlyExport] = useState<boolean>(false);
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedAvailability, setSelectedAvailability] = useState<string>('all');
+
+  // URL search params mapping for deep linking
+  const searchParams = useSearchParams();
+  const paramCategory = searchParams.get('category');
+  const paramMaterial = searchParams.get('material');
+  const paramSeason = searchParams.get('season');
+  const paramSubCategory = searchParams.get('sub_category');
+
+  useEffect(() => {
+    if (paramCategory) setSelectedCategory(paramCategory);
+    if (paramMaterial) setSelectedMaterial(paramMaterial);
+    if (paramSeason) setSelectedSeason(paramSeason);
+    if (paramSubCategory) setSelectedSubCategory(paramSubCategory);
+  }, [paramCategory, paramMaterial, paramSeason, paramSubCategory]);
+
+  // Extract unique subcategories from loaded products dynamically
+  const allSubCategories = useMemo(() => {
+    const subs = new Set<string>();
+    initialProducts.forEach(p => {
+      if (p.sub_category) subs.add(p.sub_category);
+    });
+    return Array.from(subs);
+  }, [initialProducts]);
 
   // Hardcoded visual mapping for products
   const productImages: Record<number, string> = {
@@ -56,11 +83,21 @@ export default function ProductsCatalogWrapper({
   const resetFilters = () => {
     setSelectedCategory('all');
     setSelectedMaterial('all');
+    setSelectedSeason('all');
+    setSelectedSubCategory('all');
     setSearchQuery('');
     setOnlyOrganic(false);
     setOnlyExport(false);
     setSelectedType('all');
     setSelectedAvailability('all');
+  };
+
+  // Toggle card expanded state (ensuring only one card can be expanded at a time)
+  const toggleCardExpansion = (id: number) => {
+    setExpandedCards(prev => {
+      const isCurrentlyExpanded = !!prev[id];
+      return isCurrentlyExpanded ? {} : { [id]: true };
+    });
   };
 
   // Dynamic filter matching
@@ -72,7 +109,8 @@ export default function ProductsCatalogWrapper({
         const inName = product.name.toLowerCase().includes(query);
         const inShort = product.short_description.toLowerCase().includes(query);
         const inLong = product.long_description.toLowerCase().includes(query);
-        if (!inName && !inShort && !inLong) return false;
+        const inSub = product.sub_category?.toLowerCase().includes(query);
+        if (!inName && !inShort && !inLong && !inSub) return false;
       }
 
       // 2. Category
@@ -105,9 +143,30 @@ export default function ProductsCatalogWrapper({
         if (!parts.includes(selectedAvailability)) return false;
       }
 
+      // 8. Season Filter
+      if (selectedSeason !== 'all') {
+        if (product.season?.toLowerCase() !== selectedSeason.toLowerCase()) return false;
+      }
+
+      // 9. Sub-category Filter
+      if (selectedSubCategory !== 'all') {
+        if (product.sub_category !== selectedSubCategory) return false;
+      }
+
       return true;
     });
-  }, [initialProducts, searchQuery, selectedCategory, selectedMaterial, onlyOrganic, onlyExport, selectedType, selectedAvailability]);
+  }, [
+    initialProducts,
+    searchQuery,
+    selectedCategory,
+    selectedMaterial,
+    onlyOrganic,
+    onlyExport,
+    selectedType,
+    selectedAvailability,
+    selectedSeason,
+    selectedSubCategory
+  ]);
 
   // Animation variants
   const containerVariants = {
@@ -209,7 +268,7 @@ export default function ProductsCatalogWrapper({
                 <span className="font-serif font-bold text-brand-green flex items-center gap-1.5">
                   Filter Coordinates
                 </span>
-                {(selectedCategory !== 'all' || selectedMaterial !== 'all' || searchQuery.trim() || onlyOrganic || onlyExport || selectedType !== 'all' || selectedAvailability !== 'all') && (
+                {(selectedCategory !== 'all' || selectedMaterial !== 'all' || selectedSeason !== 'all' || selectedSubCategory !== 'all' || searchQuery.trim() || onlyOrganic || onlyExport || selectedType !== 'all' || selectedAvailability !== 'all') && (
                   <motion.button
                     whileHover={{ rotate: -90 }}
                     onClick={resetFilters}
@@ -272,7 +331,38 @@ export default function ProductsCatalogWrapper({
                 </select>
               </div>
 
-              {/* 4. Sourcing Availability */}
+              {/* 4. Season Filter */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-brand-gold mb-3">Harvest Season</h4>
+                <select
+                  value={selectedSeason}
+                  onChange={(e) => setSelectedSeason(e.target.value)}
+                  className="w-full bg-bg-beige/40 text-xs text-text-secondary px-3 py-2.5 rounded-xl border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                >
+                  <option value="all">All Seasons</option>
+                  <option value="spring">Spring</option>
+                  <option value="summer">Summer</option>
+                  <option value="autumn">Autumn</option>
+                  <option value="winter">Winter</option>
+                </select>
+              </div>
+
+              {/* 5. Sub-category Filter */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-brand-green mb-3">Sub-category</h4>
+                <select
+                  value={selectedSubCategory}
+                  onChange={(e) => setSelectedSubCategory(e.target.value)}
+                  className="w-full bg-bg-beige/40 text-xs text-text-secondary px-3 py-2.5 rounded-xl border border-brand-green/10 focus:outline-none focus:border-brand-gold"
+                >
+                  <option value="all">All Sub-categories</option>
+                  {allSubCategories.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 6. Sourcing Availability */}
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-brand-green mb-3">Sourcing Volume</h4>
                 <div className="flex flex-col gap-1.5">
@@ -333,7 +423,7 @@ export default function ProductsCatalogWrapper({
                   variants={containerVariants}
                   initial="hidden"
                   animate="show"
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 items-start"
                 >
                   {filteredProducts.map((prod) => (
                     <motion.div
@@ -345,16 +435,18 @@ export default function ProductsCatalogWrapper({
                     >
                       {/* Media container */}
                       <div className="relative aspect-[4/3] overflow-hidden bg-bg-mist border-b border-brand-green/5">
-                        {prod.export_quality === 1 && (
-                          <span className="absolute top-4 left-4 z-10 bg-brand-green text-brand-gold text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
-                            Premium Export
-                          </span>
-                        )}
-                        {prod.certified === 1 && (
-                          <span className="absolute top-4 right-4 z-10 bg-brand-gold text-brand-green text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded flex items-center gap-0.5 shadow-sm">
-                            <BadgeCheck className="w-3.5 h-3.5" /> USDA Organic
-                          </span>
-                        )}
+                        <div className="absolute top-3 left-3 right-3 z-10 flex gap-2">
+                          {prod.export_quality === 1 && (
+                            <span className="bg-[#5C1D1D] text-brand-gold text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md flex-1 text-center select-none">
+                              Premium Export
+                            </span>
+                          )}
+                          {prod.certified === 1 && (
+                            <span className="bg-[#5C1D1D] text-white text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md shadow-md flex-1 text-center flex items-center justify-center gap-1 select-none">
+                              <BadgeCheck className="w-3 h-3 text-brand-gold" /> USDA Organic
+                            </span>
+                          )}
+                        </div>
                         
                         <img
                           src={productImages[prod.id] || prod.image_url}
@@ -364,54 +456,153 @@ export default function ProductsCatalogWrapper({
                       </div>
                       
                       {/* Text content */}
-                      <div className="p-6 flex flex-col flex-grow justify-between gap-5">
+                      <div className="p-5 flex flex-col flex-grow justify-between gap-3.5">
                         <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-gold">
-                            <span>{prod.categories?.[0]?.name || 'Health'}</span>
+                          {/* Interlinked Category and Material Badges */}
+                          <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-brand-gold h-4 overflow-hidden">
+                            <button
+                              onClick={() => setSelectedCategory(prod.categories?.[0]?.slug || 'all')}
+                              className="hover:underline hover:text-brand-green cursor-pointer text-left transition-colors"
+                            >
+                              {prod.categories?.[0]?.name || 'Health'}
+                            </button>
                             <span className="w-1 h-1 bg-text-muted rounded-full"></span>
-                            <span>{prod.materials?.[0]?.name || 'Origin Source'}</span>
+                            <button
+                              onClick={() => setSelectedMaterial(prod.materials?.[0]?.slug || 'all')}
+                              className="hover:underline hover:text-brand-green cursor-pointer text-left transition-colors"
+                            >
+                              {prod.materials?.[0]?.name || 'Origin Source'}
+                            </button>
                           </div>
 
-                          {prod.season && prod.season.toLowerCase() !== 'all' && prod.season.trim() !== '' && (
-                            <span className="inline-block text-[8px] bg-brand-gold/10 text-brand-gold font-bold uppercase tracking-widest px-2 py-0.5 rounded self-start mt-0.5">
-                              Seasonal ({prod.season})
-                            </span>
-                          )}
+                          {/* Season and Sub-category Badges */}
+                          <div className="flex flex-wrap gap-1 h-5 overflow-hidden">
+                            {prod.sub_category && (
+                              <button
+                                onClick={() => setSelectedSubCategory(prod.sub_category || 'all')}
+                                className="inline-block text-[8px] bg-brand-green/10 text-brand-green font-bold uppercase tracking-widest px-2 py-0.5 rounded hover:bg-brand-green hover:text-bg-cream transition-colors duration-200"
+                              >
+                                {prod.sub_category}
+                              </button>
+                            )}
+                            {prod.season && prod.season.toLowerCase() !== 'all' && prod.season.trim() !== '' && (
+                              <Link
+                                href={`/shop-by-season?season=${prod.season.toLowerCase()}`}
+                                className="inline-block text-[8px] bg-brand-gold/10 text-brand-gold font-bold uppercase tracking-widest px-2 py-0.5 rounded hover:bg-brand-gold hover:text-brand-green transition-colors duration-200"
+                              >
+                                Seasonal ({prod.season})
+                              </Link>
+                            )}
+                          </div>
                           
-                          <h3 className="font-serif text-xl font-bold text-brand-green hover:text-brand-gold transition-colors leading-snug">
+                          <h3 className="font-serif text-base font-bold text-brand-green hover:text-brand-gold transition-colors leading-snug line-clamp-2 h-11 overflow-hidden">
                             <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
                           </h3>
                           
-                          <p className="text-xs sm:text-sm text-text-secondary font-light leading-relaxed line-clamp-3">
+                          <p className="text-[11px] text-text-secondary font-light leading-normal line-clamp-2 h-9 overflow-hidden">
                             {prod.short_description}
                           </p>
                         </div>
 
-                        {/* Benefits list */}
-                        <div className="flex flex-wrap gap-1.5">
-                          {prod.benefits?.slice(0, 2).map(ben => (
-                            <span key={ben.id} className="text-[10px] bg-brand-sage/15 text-brand-green px-2.5 py-1 rounded font-medium">
-                              {ben.name}
-                            </span>
-                          ))}
-                        </div>
-                        
-                        {/* Inquiry Action bottom row */}
-                        <div className="border-t border-brand-green/5 pt-4 flex items-center justify-between mt-auto">
+                        {/* Price, Stock (Quantity Available), and Chevron Down toggle beside each other */}
+                        <div className="flex items-center justify-between border-t border-brand-green/5 pt-4 mt-auto">
+                          {/* Price */}
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-text-muted uppercase font-bold tracking-wider">MOQ</span>
-                            <span className="text-xs font-semibold text-text-secondary">
-                              {prod.moq}
-                            </span>
+                            <span className="text-[8px] text-text-muted uppercase font-bold tracking-wider">Price</span>
+                            <div className="flex items-center gap-1.5">
+                              {prod.discount_price ? (
+                                <>
+                                  <span className="text-sm font-bold text-brand-green">
+                                    ₹{prod.discount_price.toLocaleString('en-IN')}
+                                  </span>
+                                  <span className="text-[10px] text-text-muted line-through">
+                                    ₹{prod.price?.toLocaleString('en-IN')}
+                                  </span>
+                                </>
+                              ) : prod.price ? (
+                                <span className="text-sm font-bold text-brand-green">
+                                  ₹{prod.price.toLocaleString('en-IN')}
+                                </span>
+                              ) : (
+                                <span className="text-xs font-bold text-brand-gold">Inquire</span>
+                              )}
+                            </div>
                           </div>
-                          
-                          <Link
-                            href={`/products/${prod.slug}`}
-                            className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors duration-300"
-                          >
-                            Explore Sourcing
-                          </Link>
+
+                          {/* Quantity Available & Chevron Arrow */}
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col text-right">
+                              <span className="text-[8px] text-text-muted uppercase font-bold tracking-wider">Available</span>
+                              <span className="text-xs font-semibold text-text-secondary">
+                                {prod.stock !== undefined ? `${prod.stock} units` : 'In Stock'}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => toggleCardExpansion(prod.id)}
+                              className={`w-8 h-8 rounded-full border border-brand-green/10 flex items-center justify-center cursor-pointer transition-all duration-300 ${
+                                expandedCards[prod.id]
+                                  ? 'bg-brand-green text-brand-gold border-brand-green'
+                                  : 'bg-transparent text-brand-green hover:border-brand-gold hover:bg-brand-sage/5'
+                              }`}
+                            >
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-300 ${
+                                  expandedCards[prod.id] ? 'rotate-180' : ''
+                                }`}
+                              />
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Expanded detail drawer */}
+                        <AnimatePresence initial={false}>
+                          {expandedCards[prod.id] && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden border-t border-brand-green/5 bg-brand-sage/5 -mx-6 px-6 py-4 flex flex-col gap-4"
+                            >
+                              <div className="space-y-3">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-gold flex items-center gap-1">
+                                  <Compass className="w-3.5 h-3.5" /> Source Material & Process
+                                </div>
+
+                                {prod.materials && prod.materials.length > 0 ? (
+                                  prod.materials.map((material) => (
+                                    <div key={material.id} className="space-y-2 border-l-2 border-brand-gold/30 pl-3">
+                                      <div className="flex flex-col gap-0.5 text-left">
+                                        <span className="text-xs font-serif font-bold text-brand-green">
+                                          {material.name}
+                                        </span>
+                                        <span className="text-[9px] text-text-muted font-medium">
+                                          Origin: {material.origin || 'Kashmir Valley'}
+                                        </span>
+                                      </div>
+                                      
+                                      <p className="text-[11px] leading-[1.4] text-text-secondary font-light line-clamp-2">
+                                        <strong className="font-semibold text-brand-green">Harvest Story:</strong>{' '}
+                                        {material.extraction_story || material.overview}
+                                      </p>
+                                      
+                                      <div className="pt-1">
+                                        <Link
+                                          href={`/materials/${material.slug}`}
+                                          className="inline-flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest text-brand-gold hover:text-brand-green transition-colors"
+                                        >
+                                          Read More <ArrowRight className="w-3 h-3" />
+                                        </Link>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <p className="text-xs text-text-muted italic">No linked material details found.</p>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </motion.div>
                   ))}

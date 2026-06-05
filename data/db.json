@@ -227,12 +227,12 @@
       "packaging": "Premium moisture-resistant glass jars with gold-embossed velvet boxes.",
       "shipping": "Worldwide air shipping available. Certified with phytosanitary documentation.",
       "created_at": "2026-05-29T20:20:24.000Z",
-      "price": null,
-      "discount_price": null,
+      "price": 350,
+      "discount_price": 299,
       "sku": "KO-SAF-001",
       "stock": 100,
       "sub_category": "Special Reserve",
-      "season": "summer"
+      "season": "spring"
     },
     {
       "id": 2,
@@ -249,7 +249,12 @@
       "packaging": "Food-grade glass jars with cork lids and rustic jute neck wrap.",
       "shipping": "Secured vacuum sealed pallets for international sea and air shipping.",
       "created_at": "2026-05-29T20:20:24.000Z",
-      "season": "spring"
+      "price": 999,
+      "discount_price": 899,
+      "sku": "KO-HON-001",
+      "stock": 120,
+      "sub_category": "Forest Wild",
+      "season": "summer"
     },
     {
       "id": 3,
@@ -266,7 +271,12 @@
       "packaging": "Custom felt-lined wooden crates with heavy eco-friendly cardboard layers.",
       "shipping": "Safe air/sea freight shipping with certified termite-fumigation certificate.",
       "created_at": "2026-05-29T20:20:24.000Z",
-      "season": "all"
+      "price": 3499,
+      "discount_price": 2999,
+      "sku": "KO-WD-001",
+      "stock": 25,
+      "sub_category": "Wood Carving",
+      "season": "autumn"
     },
     {
       "id": 4,
@@ -283,6 +293,11 @@
       "packaging": "Amber glass dropper bottles with gold seals / HDPE bulk food containers.",
       "shipping": "Leak-proof thermal-insulated transport packaging.",
       "created_at": "2026-05-29T20:20:24.000Z",
+      "price": 1299,
+      "discount_price": 1199,
+      "sku": "KO-OIL-001",
+      "stock": 65,
+      "sub_category": "Cold Pressed Oils",
       "season": "autumn"
     },
     {
@@ -300,6 +315,11 @@
       "packaging": "UV-blocking cobalt blue glass bottles with child-safety tamper drop seals.",
       "shipping": "Safe air transport certified under IATA hazardous liquid classifications.",
       "created_at": "2026-05-29T20:20:24.000Z",
+      "price": 1499,
+      "discount_price": 1399,
+      "sku": "KO-LAV-001",
+      "stock": 40,
+      "sub_category": "Aromatic Oils",
       "season": "summer"
     },
     {
@@ -317,7 +337,12 @@
       "packaging": "Individually wrapped in recycled handmade paper box with gold-foil seal.",
       "shipping": "Standard ground and air transit.",
       "created_at": "2026-05-29T20:20:24.000Z",
-      "season": "autumn"
+      "price": 399,
+      "discount_price": 349,
+      "sku": "KO-SOP-001",
+      "stock": 200,
+      "sub_category": "Skincare Essentials",
+      "season": "spring"
     },
     {
       "id": 7,
@@ -334,6 +359,11 @@
       "packaging": "Hexagonal glass jars with gold lids and hand-tied tag locks.",
       "shipping": "Thermal protected container crates.",
       "created_at": "2026-05-29T20:20:24.000Z",
+      "price": 1499,
+      "discount_price": 1299,
+      "sku": "KO-HON-002",
+      "stock": 120,
+      "sub_category": "Forest Wild",
       "season": "winter"
     },
     {
@@ -351,7 +381,12 @@
       "packaging": "Wrapped in muslin cloth inside a heavy recycled craft paper tube.",
       "shipping": "Safe custom carton pallets.",
       "created_at": "2026-05-29T20:20:24.000Z",
-      "season": "all"
+      "price": 1899,
+      "discount_price": 1699,
+      "sku": "KO-WD-002",
+      "stock": 35,
+      "sub_category": "Wood Carving",
+      "season": "autumn"
     },
     {
       "id": 9,
@@ -368,6 +403,11 @@
       "packaging": "Vacuum-sealed air-tight ambient packages within premium wooden gift boxes.",
       "shipping": "Direct air courier to preserve product dryness.",
       "created_at": "2026-05-29T20:20:24.000Z",
+      "price": 9999,
+      "discount_price": 8999,
+      "sku": "KO-MUSH-001",
+      "stock": 15,
+      "sub_category": "Special Reserve",
       "season": "spring"
     },
     {
@@ -385,6 +425,11 @@
       "packaging": "Tamper-resistant gold dropper bottle inside a velvet-lined case.",
       "shipping": "Secure padded parcels for international safety.",
       "created_at": "2026-05-29T20:20:24.000Z",
+      "price": 2499,
+      "discount_price": 2199,
+      "sku": "KO-SER-001",
+      "stock": 55,
+      "sub_category": "Skincare Essentials",
       "season": "autumn"
     }
   ],

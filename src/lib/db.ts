@@ -10,6 +10,9 @@ export interface User {
   password_hash: string;
   role: string;
   created_at: string;
+  phone?: string | null;
+  otp?: string | null;
+  otp_expiry?: string | null;
 }
 
 export interface Category {
@@ -194,6 +197,9 @@ const SEED_DATA: LocalDBState = {
       password_hash: '$2a$10$tMhP4p07n6z9YgK/YvKgeOSN.CymcWdM82oK5T5B/iB4lFskG64U.',
       role: 'admin',
       created_at: new Date().toISOString(),
+      phone: null,
+      otp: null,
+      otp_expiry: null
     }
   ],
   categories: [
@@ -874,7 +880,15 @@ function simulateSQLQuery(sql: string, params: any[]): any {
     if (normalizedSql.includes('from users')) {
       if (normalizedSql.includes('where email =')) {
         const email = params[0] || '';
-        return db.users.filter(u => u.email.toLowerCase() === email.toLowerCase());
+        return db.users.filter(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+      }
+      if (normalizedSql.includes('where phone =')) {
+        const phone = params[0] || '';
+        return db.users.filter(u => u.phone === phone);
+      }
+      if (normalizedSql.includes('where id =')) {
+        const id = Number(params[0]);
+        return db.users.filter(u => u.id === id);
       }
       return db.users;
     }
@@ -983,6 +997,24 @@ function simulateSQLQuery(sql: string, params: any[]): any {
 
   // 2. INSERT inquiries/entries
   if (normalizedSql.startsWith('insert into')) {
+    if (normalizedSql.includes('insert into users')) {
+      const nextId = db.users.length > 0 ? Math.max(...db.users.map(u => u.id)) + 1 : 1;
+      const newUser: User = {
+        id: nextId,
+        name: params[0] || '',
+        email: params[1] || '',
+        password_hash: params[2] || '',
+        phone: params[3] || null,
+        otp: params[4] || null,
+        otp_expiry: params[5] || null,
+        role: params[6] || 'customer',
+        created_at: params[7] || new Date().toISOString()
+      };
+      db.users.push(newUser);
+      saveJsonDb(db);
+      return { insertId: nextId, affectedRows: 1 };
+    }
+
     if (normalizedSql.includes('insert into inquiries')) {
       const nextId = db.inquiries.length > 0 ? Math.max(...db.inquiries.map(i => i.id)) + 1 : 1;
       const newInquiry: Inquiry = {
@@ -1116,6 +1148,43 @@ function simulateSQLQuery(sql: string, params: any[]): any {
 
   // 3. UPDATE entries
   if (normalizedSql.startsWith('update')) {
+    if (normalizedSql.includes('update users')) {
+      if (normalizedSql.includes('set otp =') && normalizedSql.includes('otp_expiry =')) {
+        const otp = params[0];
+        const otp_expiry = params[1];
+        if (normalizedSql.includes('where id =')) {
+          const id = Number(params[2]);
+          const u = db.users.find(x => x.id === id);
+          if (u) {
+            u.otp = otp;
+            u.otp_expiry = otp_expiry;
+            saveJsonDb(db);
+            return { affectedRows: 1 };
+          }
+        } else if (normalizedSql.includes('where phone =')) {
+          const phone = params[2];
+          const u = db.users.find(x => x.phone === phone);
+          if (u) {
+            u.otp = otp;
+            u.otp_expiry = otp_expiry;
+            saveJsonDb(db);
+            return { affectedRows: 1 };
+          }
+        }
+      } else if (normalizedSql.includes('set name =') && normalizedSql.includes('email =')) {
+        const name = params[0];
+        const email = params[1];
+        const id = Number(params[2]);
+        const u = db.users.find(x => x.id === id);
+        if (u) {
+          u.name = name;
+          u.email = email;
+          saveJsonDb(db);
+          return { affectedRows: 1 };
+        }
+      }
+    }
+
     if (normalizedSql.includes('update inquiries')) {
       if (normalizedSql.includes('set status =')) {
         const status = params[0];
@@ -1265,6 +1334,13 @@ function simulateSQLQuery(sql: string, params: any[]): any {
 
   // 4. DELETE entries
   if (normalizedSql.startsWith('delete')) {
+    if (normalizedSql.includes('from users')) {
+      const id = Number(params[0]);
+      db.users = db.users.filter(u => u.id !== id);
+      saveJsonDb(db);
+      return { affectedRows: 1 };
+    }
+
     if (normalizedSql.includes('from inquiries')) {
       const id = Number(params[0]);
       db.inquiries = db.inquiries.filter(i => i.id !== id);
@@ -1473,12 +1549,16 @@ export const SCHEMA_SQL = `
 
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(50) DEFAULT 'admin',
+  name VARCHAR(255) DEFAULT NULL,
+  email VARCHAR(255) UNIQUE DEFAULT NULL,
+  password_hash VARCHAR(255) DEFAULT NULL,
+  phone VARCHAR(50) UNIQUE DEFAULT NULL,
+  otp VARCHAR(10) DEFAULT NULL,
+  otp_expiry TIMESTAMP DEFAULT NULL,
+  role VARCHAR(50) DEFAULT 'customer',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX (email)
+  INDEX (email),
+  INDEX (phone)
 );
 
 CREATE TABLE IF NOT EXISTS categories (

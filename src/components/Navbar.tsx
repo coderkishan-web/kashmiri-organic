@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, ChevronDown, Search, ArrowRight, PhoneCall, Sparkles } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, ArrowRight, PhoneCall, Sparkles, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
@@ -16,6 +16,22 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Customer auth state
+  const [customerUser, setCustomerUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/customer/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.authenticated) {
+          setCustomerUser(data.user);
+        } else {
+          setCustomerUser(null);
+        }
+      })
+      .catch(() => setCustomerUser(null));
+  }, [pathname]);
 
   // Hover timer refs to establish a smooth interactive hover bridge
   const megaMenuTimerRef = React.useRef<any>(null);
@@ -233,6 +249,24 @@ export default function Navbar() {
                 <PhoneCall className="w-3.5 h-3.5 text-brand-gold animate-pulse" /> B2B Inquiry
               </Link>
             </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              {customerUser ? (
+                <Link
+                  href="/account"
+                  className="inline-flex items-center gap-2 bg-brand-gold hover:bg-brand-gold/90 text-brand-green px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300"
+                >
+                  <User className="w-3.5 h-3.5 text-brand-green" /> Account
+                </Link>
+              ) : (
+                <Link
+                  href="/account/login"
+                  className="inline-flex items-center gap-2 border border-brand-green/20 hover:border-brand-green text-brand-green px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300"
+                >
+                  Sign In
+                </Link>
+              )}
+            </motion.div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -449,6 +483,21 @@ export default function Navbar() {
                   >
                     Request B2B Corporate Quote
                   </Link>
+                  {customerUser ? (
+                    <Link
+                      href="/account"
+                      className="w-full text-center block bg-brand-gold hover:bg-brand-gold/90 text-brand-green py-4 rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors shadow"
+                    >
+                      👤 Client Account Dashboard
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/account/login"
+                      className="w-full text-center block border border-brand-green/30 hover:border-brand-green text-brand-green py-4 rounded-2xl text-xs font-semibold uppercase tracking-wider transition-colors"
+                    >
+                      Sign In / Register
+                    </Link>
+                  )}
                 </div>
               </div>
 

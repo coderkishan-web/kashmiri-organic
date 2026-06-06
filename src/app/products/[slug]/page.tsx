@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { executeQuery, Product, getProductBySlug } from '@/lib/db';
 import { ArrowLeft, ArrowRight, Check, Sparkles, MessageSquare, Mail, Award, Box, Truck, Download, Calendar, ShieldCheck, Tag } from 'lucide-react';
 import ProductImageGallery from '@/components/ProductImageGallery';
+import ProductDetailActions from '@/components/ProductDetailActions';
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -52,7 +53,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     <div className="flex flex-col min-h-screen bg-bg-mist">
       
       {/* 1. Header Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:sticky lg:top-[100px] w-full">
         <Link
           href="/products"
           className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-green hover:text-brand-gold transition-colors"
@@ -66,7 +67,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* A. Product Image Showcase & Specs (Left Column - Dynamic & Sticky Pinned!) */}
-          <div className="lg:col-span-6 flex flex-col gap-6 lg:sticky lg:top-28 lg:self-start">
+          <div className="lg:col-span-6 flex flex-col gap-6 lg:sticky lg:top-[150px] lg:self-start">
             <ProductImageGallery
               gallery={gallery}
               productName={product.name}
@@ -194,21 +195,25 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
 
             {/* 4. Instant Action Triggers */}
-            <div className="flex flex-col sm:flex-row items-stretch gap-4 pt-4 border-t border-brand-green/5">
-              <Link
-                href={`/inquiry?product_id=${product.id}`}
-                className="flex-1 bg-brand-green hover:bg-brand-green/90 text-bg-cream font-bold text-xs sm:text-sm uppercase tracking-wider py-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-transform duration-200 active:scale-95"
-              >
-                <Mail className="w-4 h-4 text-brand-gold" /> Request Quote Sourcing
-              </Link>
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-bg-cream font-bold text-xs sm:text-sm uppercase tracking-wider py-4 rounded-xl text-center flex items-center justify-center gap-2 transition-transform duration-200 active:scale-95"
-              >
-                <MessageSquare className="w-4 h-4" /> WhatsApp Inquiry
-              </a>
+            <div className="space-y-4 pt-4 border-t border-brand-green/5">
+              <ProductDetailActions product={product} />
+
+              <div className="flex flex-col sm:flex-row items-stretch gap-4">
+                <Link
+                  href={`/inquiry?product_id=${product.id}`}
+                  className="flex-1 bg-brand-green hover:bg-brand-green/90 text-bg-cream font-bold text-xs sm:text-sm uppercase tracking-wider py-4 rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition-transform duration-200 active:scale-95"
+                >
+                  <Mail className="w-4 h-4 text-brand-gold" /> Request Quote Sourcing
+                </Link>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-bg-cream font-bold text-xs sm:text-sm uppercase tracking-wider py-4 rounded-xl text-center flex items-center justify-center gap-2 transition-transform duration-200 active:scale-95"
+                >
+                  <MessageSquare className="w-4 h-4" /> WhatsApp Inquiry
+                </a>
+              </div>
             </div>
 
           </div>

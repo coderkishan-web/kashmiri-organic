@@ -14,8 +14,8 @@ export default function AdminDashboardPage() {
   const [adminUser, setAdminUser] = useState<any>(null);
   const [isVerifying, setIsVerifying] = useState(true);
 
-  // Tab State: 'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types'
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types'>('inquiries');
+  // Tab State: 'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users'
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users'>('inquiries');
 
   // Database lists
   const [inquiries, setInquiries] = useState<any[]>([]);
@@ -23,6 +23,7 @@ export default function AdminDashboardPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
 
   // Loading & Error states
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function AdminDashboardPage() {
   const [editingUsageType, setEditingUsageType] = useState<any>(null);
 
   const [viewingInquiry, setViewingInquiry] = useState<any>(null);
+  const [inquirySubTab, setInquirySubTab] = useState<'bulk' | 'orders'>('bulk');
 
   // 1. Verify Authentication & Fetch Initial Data
   useEffect(() => {
@@ -126,6 +128,13 @@ export default function AdminDashboardPage() {
         const data = await matRes.json();
         setMaterials(data.materials || []);
       }
+
+      // Fetch users
+      const userRes = await fetch('/api/admin/users');
+      if (userRes.ok) {
+        const data = await userRes.json();
+        setUsers(data.users || []);
+      }
     } catch (err) {
       setActionError('Failed to fetch organic records.');
     } finally {
@@ -135,10 +144,8 @@ export default function AdminDashboardPage() {
 
   // 2. Auth Actions (Logout)
   const handleLogout = async () => {
-    if (confirm('Verify: Do you wish to lock the valley archives and logout?')) {
-      await fetch('/api/admin/logout', { method: 'POST' });
-      router.push('/admin/login');
-    }
+    await fetch('/api/admin/logout', { method: 'POST' });
+    router.push('/admin/login');
   };
 
   // 3. Inquiry CRUD actions
@@ -582,8 +589,32 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleDeleteUser = async (id: number) => {
+    if (!confirm('Verify: Are you sure you want to permanently delete this user account?')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } else {
+        const data = await res.json();
+        throw new Error(data.error || 'Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to remove user account.');
+    }
+  };
+
   // Helper filters based on query
   const query = searchQuery.toLowerCase();
+
+  const filteredUsers = users.filter(
+    (u) =>
+      (u.name || '').toLowerCase().includes(query) ||
+      (u.email || '').toLowerCase().includes(query) ||
+      (u.phone || '').toLowerCase().includes(query) ||
+      (u.role || '').toLowerCase().includes(query)
+  );
 
   const filteredMaterials = materials.filter(
     (m) =>
@@ -739,6 +770,18 @@ export default function AdminDashboardPage() {
               <CheckCircle className="w-4 h-4 shrink-0" />
               <span>Usage Applications</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex items-center gap-3 text-xs uppercase font-bold tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'users' 
+                  ? 'bg-brand-gold text-brand-green shadow' 
+                  : 'text-bg-cream/70 hover:bg-bg-beige/5 hover:text-bg-cream'
+              }`}
+            >
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span>User Management</span>
+            </button>
           </nav>
         </div>
 
@@ -780,6 +823,7 @@ export default function AdminDashboardPage() {
               {activeTab === 'materials' && 'Harvest Materials Catalog'}
               {activeTab === 'benefits' && 'Wellness Benefits Library'}
               {activeTab === 'usage_types' && 'Recommended Applications'}
+              {activeTab === 'users' && 'Sourcing Registry & Users'}
             </h1>
           </div>
 
@@ -874,149 +918,199 @@ export default function AdminDashboardPage() {
 
           {/* TAB 1: INQUIRIES VIEW */}
           {activeTab === 'inquiries' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
-              
-              {/* Table list (Left) */}
-              <div className="lg:col-span-8 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
-                <table className="w-full border-collapse text-left text-xs">
-                  <thead>
-                    <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
-                      <th className="p-4 font-bold">Client Name</th>
-                      <th className="p-4 font-bold">Contact Info</th>
-                      <th className="p-4 font-bold">Inquiry Style</th>
-                      <th className="p-4 font-bold">Status Badge</th>
-                      <th className="p-4 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-bg-beige/10">
-                    {filteredInquiries.map((inq) => (
-                      <tr
-                        key={inq.id}
-                        onClick={() => setViewingInquiry(inq)}
-                        className={`hover:bg-bg-beige/5 cursor-pointer transition-colors ${
-                          viewingInquiry?.id === inq.id ? 'bg-bg-beige/5 border-l-2 border-brand-gold' : ''
-                        }`}
-                      >
-                        <td className="p-4 font-semibold text-bg-cream">{inq.name}</td>
-                        <td className="p-4 text-bg-cream/70 font-light">
-                          {inq.email} <br />
-                          {inq.phone}
-                        </td>
-                        <td className="p-4">
-                          <span className="bg-bg-beige/10 text-brand-gold text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                            {inq.inquiry_type}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          {inq.status === 'new' && (
-                            <span className="bg-red-950/60 text-red-200 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                              New Sourcing
-                            </span>
-                          )}
-                          {inq.status === 'reviewed' && (
-                            <span className="bg-yellow-950/60 text-yellow-200 border border-yellow-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                              Reviewed
-                            </span>
-                          )}
-                          {inq.status === 'replied' && (
-                            <span className="bg-green-950/60 text-green-200 border border-green-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                              Replied
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => handleDeleteInquiry(inq.id)}
-                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+            <div className="flex flex-col gap-6 w-full">
+              {/* Sourcing/Order Sub-Tabs */}
+              <div className="flex border-b border-bg-beige/10 gap-6">
+                <button
+                  onClick={() => { setInquirySubTab('bulk'); setViewingInquiry(null); }}
+                  className={`pb-3 text-xs uppercase font-bold tracking-wider transition-all relative cursor-pointer ${
+                    inquirySubTab === 'bulk' ? 'text-brand-gold font-bold' : 'text-bg-cream/50 hover:text-bg-cream'
+                  }`}
+                >
+                  Bulk Inquiries
+                  {inquirySubTab === 'bulk' && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-gold rounded-full" />
+                  )}
+                </button>
+                <button
+                  onClick={() => { setInquirySubTab('orders'); setViewingInquiry(null); }}
+                  className={`pb-3 text-xs uppercase font-bold tracking-wider transition-all relative cursor-pointer ${
+                    inquirySubTab === 'orders' ? 'text-brand-gold font-bold' : 'text-bg-cream/50 hover:text-bg-cream'
+                  }`}
+                >
+                  Sourcing Orders
+                  {inquirySubTab === 'orders' && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-gold rounded-full" />
+                  )}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
+                
+                {/* Table list (Left) */}
+                <div className="lg:col-span-8 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+                  <table className="w-full border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                        <th className="p-4 font-bold">Client Name</th>
+                        <th className="p-4 font-bold">Contact Info</th>
+                        <th className="p-4 font-bold">{inquirySubTab === 'orders' ? 'Primary Item' : 'Inquiry Style'}</th>
+                        <th className="p-4 font-bold">Status Badge</th>
+                        <th className="p-4 font-bold text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-bg-beige/10">
+                      {filteredInquiries
+                        .filter((inq) => inquirySubTab === 'orders' ? inq.inquiry_type === 'order' : inq.inquiry_type !== 'order')
+                        .map((inq) => (
+                          <tr
+                            key={inq.id}
+                            onClick={() => setViewingInquiry(inq)}
+                            className={`hover:bg-bg-beige/5 cursor-pointer transition-colors ${
+                              viewingInquiry?.id === inq.id ? 'bg-bg-beige/5 border-l-2 border-brand-gold' : ''
+                            }`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <td className="p-4 font-semibold text-bg-cream">{inq.name}</td>
+                            <td className="p-4 text-bg-cream/70 font-light">
+                              {inq.email} <br />
+                              {inq.phone}
+                            </td>
+                            <td className="p-4">
+                              {inquirySubTab === 'orders' ? (
+                                <span className="text-bg-cream/90 text-xs font-semibold">
+                                  {inq.product_name || 'Multi-Item Order'}
+                                </span>
+                              ) : (
+                                <span className="bg-bg-beige/10 text-brand-gold text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                                  {inq.inquiry_type}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-4">
+                              {inq.status === 'new' && (
+                                <span className="bg-red-950/60 text-red-200 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                                  New Sourcing
+                                </span>
+                              )}
+                              {inq.status === 'reviewed' && (
+                                <span className="bg-yellow-950/60 text-yellow-200 border border-yellow-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                                  Reviewed
+                                </span>
+                              )}
+                              {inq.status === 'replied' && (
+                                <span className="bg-green-950/60 text-green-200 border border-green-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                                  Replied
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => handleDeleteInquiry(inq.id)}
+                                className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      {filteredInquiries.filter((inq) => inquirySubTab === 'orders' ? inq.inquiry_type === 'order' : inq.inquiry_type !== 'order').length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-bg-cream/40">
+                            {inquirySubTab === 'orders' 
+                              ? 'No sourcing orders are currently logged.' 
+                              : 'No inquiries matching filters are currently logged.'}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Inquiry/Order Details Viewer (Right side) */}
+                <div className="lg:col-span-4 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl p-6 luxury-shadow flex flex-col gap-6 sticky top-24">
+                  {viewingInquiry ? (
+                    <div className="flex flex-col gap-5">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold">
+                            {viewingInquiry.inquiry_type === 'order' ? 'Sourcing Order Details' : 'Inquiry Details'}
+                          </span>
+                          <h3 className="font-serif text-lg font-bold text-bg-cream mt-0.5">{viewingInquiry.name}</h3>
+                        </div>
+                        <button
+                          onClick={() => setViewingInquiry(null)}
+                          className="text-bg-cream/40 hover:text-bg-cream"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="border-t border-bg-beige/10 pt-4 text-xs flex flex-col gap-2 font-light text-bg-cream/70">
+                        <div>
+                          <strong className="text-brand-gold font-bold uppercase text-[9px] block">
+                            {viewingInquiry.inquiry_type === 'order' ? 'Order Channel' : 'Corporate Entity'}
+                          </strong>
+                          <span className="text-bg-cream font-semibold">
+                            {viewingInquiry.inquiry_type === 'order' ? 'Direct checkout pipeline' : (viewingInquiry.company_name || 'Individual Sourcing')}
+                          </span>
+                        </div>
+                        <div>
+                          <strong className="text-brand-gold font-bold uppercase text-[9px] block">Email Sourcing</strong>
+                          <span className="text-bg-cream font-semibold">{viewingInquiry.email}</span>
+                        </div>
+                        <div>
+                          <strong className="text-brand-gold font-bold uppercase text-[9px] block">Phone / WhatsApp Routing</strong>
+                          <span className="text-bg-cream font-semibold">{viewingInquiry.phone}</span>
+                        </div>
+                        <div>
+                          <strong className="text-brand-gold font-bold uppercase text-[9px] block">Receipt Date</strong>
+                          <span>{new Date(viewingInquiry.created_at).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-bg-beige/10 pt-4">
+                        <strong className="text-brand-gold font-bold uppercase text-[9px] block mb-1">
+                          {viewingInquiry.inquiry_type === 'order' ? 'Order Coordinates & Cost Breakdown' : 'Corporate Specifications message'}
+                        </strong>
+                        <div className="bg-bg-beige/5 p-4 rounded-xl text-xs leading-relaxed font-light text-bg-cream/80 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                          {viewingInquiry.message}
+                        </div>
+                      </div>
+
+                      {/* Status updater row */}
+                      <div className="border-t border-bg-beige/10 pt-4 flex flex-col gap-2">
+                        <span className="text-[9px] uppercase font-bold text-brand-gold tracking-wider">Update status parameters</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'reviewed')}
+                            disabled={viewingInquiry.status === 'reviewed'}
+                            className="flex-1 bg-yellow-600/30 hover:bg-yellow-600 text-yellow-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
+                          >
+                            Mark Reviewed
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredInquiries.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-bg-cream/40">
-                          No inquiries matching filters are currently logged.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                          <button
+                            onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'replied')}
+                            disabled={viewingInquiry.status === 'replied'}
+                            className="flex-1 bg-green-600/30 hover:bg-green-600 text-green-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
+                          >
+                            Mark Replied
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-20 text-bg-cream/40 flex flex-col items-center gap-3">
+                      <Inbox className="w-8 h-8 text-brand-gold/40" />
+                      <p className="text-xs">
+                        {inquirySubTab === 'orders' 
+                          ? 'Click any order card row on the left to verify specifications details and coordinate communications.'
+                          : 'Click any inquiry card row on the left to verify specifications details and coordinate communications.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
               </div>
-
-              {/* Inquiry Details Viewer (Right side) */}
-              <div className="lg:col-span-4 bg-bg-cream/5 border border-bg-beige/10 rounded-2xl p-6 luxury-shadow flex flex-col gap-6 sticky top-24">
-                {viewingInquiry ? (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold">Inquiry Details</span>
-                        <h3 className="font-serif text-lg font-bold text-bg-cream mt-0.5">{viewingInquiry.name}</h3>
-                      </div>
-                      <button
-                        onClick={() => setViewingInquiry(null)}
-                        className="text-bg-cream/40 hover:text-bg-cream"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="border-t border-bg-beige/10 pt-4 text-xs flex flex-col gap-2 font-light text-bg-cream/70">
-                      <div>
-                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Corporate Entity</strong>
-                        <span className="text-bg-cream font-semibold">{viewingInquiry.company_name || 'Individual Sourcing'}</span>
-                      </div>
-                      <div>
-                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Email Sourcing</strong>
-                        <span className="text-bg-cream font-semibold">{viewingInquiry.email}</span>
-                      </div>
-                      <div>
-                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Phone / WhatsApp Routing</strong>
-                        <span className="text-bg-cream font-semibold">{viewingInquiry.phone}</span>
-                      </div>
-                      <div>
-                        <strong className="text-brand-gold font-bold uppercase text-[9px] block">Receipt Date</strong>
-                        <span>{new Date(viewingInquiry.created_at).toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-bg-beige/10 pt-4">
-                      <strong className="text-brand-gold font-bold uppercase text-[9px] block mb-1">Corporate Specifications message</strong>
-                      <div className="bg-bg-beige/5 p-4 rounded-xl text-xs leading-relaxed font-light text-bg-cream/80 max-h-48 overflow-y-auto whitespace-pre-wrap">
-                        {viewingInquiry.message}
-                      </div>
-                    </div>
-
-                    {/* Status updater row */}
-                    <div className="border-t border-bg-beige/10 pt-4 flex flex-col gap-2">
-                      <span className="text-[9px] uppercase font-bold text-brand-gold tracking-wider">Update status parameters</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'reviewed')}
-                          disabled={viewingInquiry.status === 'reviewed'}
-                          className="flex-1 bg-yellow-600/30 hover:bg-yellow-600 text-yellow-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
-                        >
-                          Mark Reviewed
-                        </button>
-                        <button
-                          onClick={() => handleUpdateInquiryStatus(viewingInquiry.id, 'replied')}
-                          disabled={viewingInquiry.status === 'replied'}
-                          className="flex-1 bg-green-600/30 hover:bg-green-600 text-green-100 font-bold text-[10px] uppercase py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-30"
-                        >
-                          Mark Replied
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-20 text-bg-cream/40 flex flex-col items-center gap-3">
-                    <Inbox className="w-8 h-8 text-brand-gold/40" />
-                    <p className="text-xs">Click any inquiry card row on the left to verify specifications details and coordinate communications.</p>
-                  </div>
-                )}
-              </div>
-
             </div>
           )}
 
@@ -1416,6 +1510,73 @@ export default function AdminDashboardPage() {
                     <tr>
                       <td colSpan={3} className="p-8 text-center text-bg-cream/40">
                         No recommended application contexts logged. Click "Add Application" to create one.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 8: USER MANAGEMENT */}
+          {activeTab === 'users' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-bg-beige/5 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider">
+                    <th className="p-4 font-bold">User Details</th>
+                    <th className="p-4 font-bold">Contact Coordinates</th>
+                    <th className="p-4 font-bold">Access Role</th>
+                    <th className="p-4 font-bold">Created Date</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-bg-beige/5 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center font-serif text-xs font-bold text-brand-gold shrink-0">
+                          {(u.name?.[0] || u.phone?.[0] || 'U').toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-bg-cream">{u.name || 'Profile Incomplete'}</h4>
+                          <span className="text-[10px] text-bg-cream/50 font-light">ID: {u.id}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-bg-cream/80 font-light">
+                        {u.phone && <div className="flex items-center gap-1.5 font-medium">📞 {u.phone}</div>}
+                        {u.email && <div className="flex items-center gap-1.5 text-bg-cream/60">{u.email}</div>}
+                        {!u.phone && !u.email && <span className="text-bg-cream/30">No Contact details</span>}
+                      </td>
+                      <td className="p-4">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                          u.role === 'admin' 
+                            ? 'bg-red-950/60 text-red-200 border-red-500/20' 
+                            : 'bg-green-950/60 text-green-200 border-green-500/20'
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="p-4 text-bg-cream/60">{u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</td>
+                      <td className="p-4 text-right">
+                        {u.role !== 'admin' ? (
+                          <button
+                            onClick={() => handleDeleteUser(u.id)}
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                            title="Delete User Account"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-bg-cream/30 italic mr-2">Protected</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-bg-cream/40">
+                        No user accounts matching search coordinates are logged.
                       </td>
                     </tr>
                   )}

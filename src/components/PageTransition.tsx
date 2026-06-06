@@ -22,7 +22,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
   }, [pathname, activePath]);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden">
+    <div className="relative min-h-screen w-full" style={{ overflowX: 'clip' }}>
       {/* Active content */}
       <motion.div
         key={activePath}

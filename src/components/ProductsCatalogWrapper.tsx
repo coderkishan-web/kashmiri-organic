@@ -554,6 +554,16 @@ export default function ProductsCatalogWrapper({
                           </div>
                         </div>
 
+                        {/* View Product Action Button */}
+                        <div className="pt-3 border-t border-brand-green/5 mt-3">
+                          <Link
+                            href={`/products/${prod.slug}`}
+                            className="w-full bg-brand-green hover:bg-brand-gold text-bg-cream hover:text-brand-green font-bold text-[10px] uppercase tracking-wider py-2.5 rounded-xl text-center flex items-center justify-center gap-1 transition-all duration-300 shadow-sm hover:shadow active:scale-98 cursor-pointer"
+                          >
+                            View Product
+                          </Link>
+                        </div>
+
                         {/* Expanded detail drawer */}
                         <AnimatePresence initial={false}>
                           {expandedCards[prod.id] && (

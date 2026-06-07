@@ -54,8 +54,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-bg-cream text-text-primary">
+      <body className="min-h-full flex flex-col bg-bg-cream text-text-primary" suppressHydrationWarning>
         <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
       </body>
     </html>

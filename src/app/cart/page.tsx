@@ -32,6 +32,12 @@ export default function CartPage() {
     country: 'India'
   });
 
+  // Coupon states
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isApplying, setIsApplying] = useState(false);
+
   // 1. Load cart and verify session on mount
   useEffect(() => {
     // Load Cart
@@ -65,6 +71,17 @@ export default function CartPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Auto-verify coupon eligibility if cart items change
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.product_id) {
+      const inCart = cartItems.some(item => item.id === appliedCoupon.product_id);
+      if (!inCart) {
+        setAppliedCoupon(null);
+        setCouponError('Product-specific coupon removed because the targeted product is no longer in cart.');
+      }
+    }
+  }, [cartItems, appliedCoupon]);
+
   // Update localStorage when cart changes
   const saveCart = (items: any[]) => {
     setCartItems(items);
@@ -95,8 +112,67 @@ export default function CartPage() {
 
   // Calculate Totals
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    if (appliedCoupon.product_id) {
+      const targetItem = cartItems.find(item => item.id === appliedCoupon.product_id);
+      if (!targetItem) return 0;
+      
+      if (appliedCoupon.discount_type === 'percentage') {
+        return Math.round(targetItem.price * targetItem.quantity * (Number(appliedCoupon.discount_value) / 100));
+      } else {
+        return Math.min(Number(appliedCoupon.discount_value), targetItem.price * targetItem.quantity);
+      }
+    } else {
+      if (appliedCoupon.discount_type === 'percentage') {
+        return Math.round(subtotal * (Number(appliedCoupon.discount_value) / 100));
+      } else {
+        return Math.min(Number(appliedCoupon.discount_value), subtotal);
+      }
+    }
+  };
+
+  const discount = calculateDiscount();
   const estShipping = subtotal > 0 ? 350 : 0; // Flat packaging / transport fee
-  const total = subtotal + estShipping;
+  const total = Math.max(0, subtotal - discount + estShipping);
+
+  const handleApplyCoupon = async () => {
+    if (!promoCode.trim()) return;
+    setIsApplying(true);
+    setCouponError('');
+    try {
+      const res = await fetch(`/api/customer/validate-coupon?code=${encodeURIComponent(promoCode.trim())}`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const coupon = data.coupon;
+        if (coupon.product_id) {
+          const inCart = cartItems.some(item => item.id === coupon.product_id);
+          if (!inCart) {
+            setCouponError('This coupon only applies to a specific product not currently in your cart.');
+            setAppliedCoupon(null);
+            setIsApplying(false);
+            return;
+          }
+        }
+        setAppliedCoupon(coupon);
+        setPromoCode('');
+      } else {
+        setCouponError(data.error || 'Invalid or expired promo code.');
+        setAppliedCoupon(null);
+      }
+    } catch (err) {
+      setCouponError('Network error validating promo code.');
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+  };
 
   const proceedToShipping = () => {
     if (!user) {
@@ -126,7 +202,9 @@ export default function CartPage() {
           total_amount: total,
           shipping_address: shippingDetails,
           payment_method: 'Credit Card / UPI',
-          user: user
+          user: user,
+          coupon_code: appliedCoupon ? appliedCoupon.code : null,
+          discount_amount: discount
         }),
       });
 
@@ -259,6 +337,12 @@ export default function CartPage() {
                       <span className="text-[#8A968E]">Items Subtotal</span>
                       <span className="font-medium">₹{subtotal.toLocaleString('en-IN')}</span>
                     </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-red-600 font-semibold">
+                        <span>Promo Discount ({appliedCoupon?.code})</span>
+                        <span>- ₹{discount.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-[#8A968E]">Packaging & Dispatch</span>
                       <span className="font-medium">₹{estShipping.toLocaleString('en-IN')}</span>
@@ -269,6 +353,48 @@ export default function CartPage() {
                       <span className="font-serif font-black text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
+
+                  {/* Promo Coupon Section */}
+                  <div className="border-t border-[#1B3527]/5 pt-4">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#C5A880] block mb-2">Promo Code</span>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/50 rounded-xl px-3 py-2 text-xs text-emerald-800">
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 font-semibold" />
+                          <span className="font-mono font-bold">{appliedCoupon.code}</span>
+                        </div>
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="text-emerald-700 hover:text-emerald-950 font-bold underline cursor-pointer text-[10px] uppercase tracking-wider"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Enter Code (e.g. MONGRA20)"
+                            value={promoCode}
+                            onChange={e => setPromoCode(e.target.value)}
+                            className="bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#C5A880] w-full uppercase"
+                          />
+                          <button
+                            onClick={handleApplyCoupon}
+                            disabled={isApplying || !promoCode.trim()}
+                            className="bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-xl cursor-pointer disabled:opacity-50"
+                          >
+                            {isApplying ? 'Applying' : 'Apply'}
+                          </button>
+                        </div>
+                        {couponError && (
+                          <p className="text-[9px] text-red-700 mt-1 leading-tight font-medium">{couponError}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     onClick={proceedToShipping}
                     disabled={cartItems.length === 0}
@@ -484,6 +610,12 @@ export default function CartPage() {
                   <span className="text-[#8A968E]">Client:</span>
                   <span className="font-medium text-[#1B3527]">{shippingDetails.name}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between py-1.5 border-b border-[#1B3527]/5 text-red-600 font-medium">
+                    <span>Discount:</span>
+                    <span>- ₹{discount.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between py-1.5">
                   <span className="text-[#8A968E]">Total Paid:</span>
                   <span className="font-bold text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span>

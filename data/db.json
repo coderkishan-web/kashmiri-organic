@@ -21,9 +21,9 @@
       "otp_expiry": null,
       "role": "customer",
       "created_at": "2026-06-06T18:38:04.093Z",
-      "address": "sdflkdnfkldm;kfmamklmdsfsf",
+      "address": "vasai road",
       "city": "vasai",
-      "pinCode": "3000020222",
+      "pinCode": "300002",
       "country": "India"
     },
     {
@@ -1064,6 +1064,34 @@
   ],
   "orders": [
     {
+      "id": "KO-ORD-2026-2391",
+      "user_phone": "9326810212",
+      "user_name": "kishan",
+      "user_email": "shindekishan937@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"slug\":\"kashmiri-mongra-saffron-grade-a\",\"price\":299,\"quantity\":2,\"image_url\":\"/images/products/saffron.jpg\"}]",
+      "total_amount": 828,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"shindekishan937@gmail.com\",\"address\":\"A-201 ashoka complex\",\"pinCode\":\"401202\",\"city\":\"mumbai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-07T05:29:28.592Z",
+      "coupon_code": "MONGRA20",
+      "discount_amount": 120
+    },
+    {
+      "id": "KO-ORD-2026-2781",
+      "user_phone": "9876543210",
+      "user_name": "kishan",
+      "user_email": "sjodme@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"price\":350,\"quantity\":1}]",
+      "total_amount": 630,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"sjodme@gmail.com\",\"address\":\"vasai road\",\"city\":\"vasai\",\"pinCode\":\"300002\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-07T05:23:35.630Z",
+      "coupon_code": "MONGRA20",
+      "discount_amount": 70
+    },
+    {
       "id": "KO-ORD-2026-9872",
       "user_phone": "9876543210",
       "user_name": "kishan",
@@ -1208,6 +1236,32 @@
       "action": "CREATE_ADMIN",
       "details": "Created new admin: kishanshinde112 (shindekishan9372@gmail.com)",
       "created_at": "2026-06-06T19:00:20.651Z"
+    }
+  ],
+  "coupons": [
+    {
+      "id": 1,
+      "code": "KESAR10",
+      "discount_type": "percentage",
+      "discount_value": 10,
+      "product_id": 1,
+      "condition_type": "period",
+      "start_date": "2026-06-07T03:55:42.325Z",
+      "end_date": "2026-06-17T03:55:42.325Z",
+      "is_popup": 0,
+      "created_at": "2026-06-07T03:55:42.327Z"
+    },
+    {
+      "id": 2,
+      "code": "MONGRA20",
+      "discount_type": "percentage",
+      "discount_value": 20,
+      "product_id": 1,
+      "condition_type": "two_days",
+      "start_date": null,
+      "end_date": null,
+      "is_popup": 1,
+      "created_at": "2026-06-07T04:10:09.738Z"
     }
   ]
 }

@@ -176,6 +176,19 @@ export interface SiteSetting {
   setting_value: string;
 }
 
+export interface Coupon {
+  id: number;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  product_id: number | null;
+  condition_type: 'period' | 'two_days' | 'first_purchase';
+  start_date: string | null;
+  end_date: string | null;
+  is_popup: number; // 0 or 1
+  created_at: string;
+}
+
 // In-Memory / File Database state for Fallback Mode
 interface LocalDBState {
   users: User[];
@@ -199,6 +212,7 @@ interface LocalDBState {
   site_settings: SiteSetting[];
   orders: Order[];
   admin_activities: AdminActivity[];
+  coupons: Coupon[];
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -714,7 +728,21 @@ const SEED_DATA: LocalDBState = {
     { id: 6, setting_key: 'instagram_url', setting_value: 'https://instagram.com/kashmiriorganic' }
   ],
   orders: [],
-  admin_activities: []
+  admin_activities: [],
+  coupons: [
+    {
+      id: 1,
+      code: 'KESAR10',
+      discount_type: 'percentage',
+      discount_value: 10,
+      product_id: 1,
+      condition_type: 'period',
+      start_date: new Date().toISOString(),
+      end_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+      is_popup: 1,
+      created_at: new Date().toISOString()
+    }
+  ]
 };
 
 // Initialize JSON database if it doesn't exist
@@ -729,7 +757,12 @@ const getJsonDb = (): LocalDBState => {
   initializeJsonDb();
   try {
     const data = fs.readFileSync(JSON_DB_PATH, 'utf-8');
-    return JSON.parse(data) as LocalDBState;
+    const db = JSON.parse(data) as LocalDBState;
+    if (!db.coupons) {
+      db.coupons = SEED_DATA.coupons || [];
+      fs.writeFileSync(JSON_DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
+    }
+    return db;
   } catch (e) {
     console.error('Error reading JSON DB, using seed data:', e);
     return SEED_DATA;
@@ -1023,6 +1056,32 @@ function simulateSQLQuery(sql: string, params: any[]): any {
       const hydrated = filtered.map(p => hydrateProductRelations(p, db));
       return hydrated;
     }
+
+    if (normalizedSql.includes('from coupons')) {
+      let filtered = db.coupons ? [...db.coupons] : [];
+      if (normalizedSql.includes('where is_popup =') || normalizedSql.includes('where is_popup=')) {
+        let isPopupVal = params && params.length > 0 ? Number(params[0]) : NaN;
+        if (isNaN(isPopupVal)) {
+          if (normalizedSql.includes('is_popup = 1') || normalizedSql.includes('is_popup=1')) {
+            isPopupVal = 1;
+          } else if (normalizedSql.includes('is_popup = 0') || normalizedSql.includes('is_popup=0')) {
+            isPopupVal = 0;
+          }
+        }
+        return filtered.filter(c => c.is_popup === isPopupVal);
+      }
+      if (normalizedSql.includes('where code =') || normalizedSql.includes('where code=')) {
+        let codeVal = params && params.length > 0 ? (params[0] || '').toLowerCase() : '';
+        if (!codeVal) {
+          const match = sql.match(/code\s*=\s*['"]([^'"]+)['"]/i);
+          if (match) {
+            codeVal = match[1].toLowerCase();
+          }
+        }
+        return filtered.filter(c => c.code.toLowerCase() === codeVal);
+      }
+      return filtered;
+    }
   }
 
   // 2. INSERT inquiries/entries
@@ -1171,6 +1230,26 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         description: params[1] || ''
       };
       db.usage_types.push(newUsageType);
+      saveJsonDb(db);
+      return { insertId: nextId, affectedRows: 1 };
+    }
+
+    if (normalizedSql.includes('insert into coupons')) {
+      const nextId = db.coupons && db.coupons.length > 0 ? Math.max(...db.coupons.map(c => c.id)) + 1 : 1;
+      const newCoupon: Coupon = {
+        id: nextId,
+        code: (params[0] || '').toUpperCase(),
+        discount_type: params[1] || 'percentage',
+        discount_value: Number(params[2]) || 0,
+        product_id: params[3] ? Number(params[3]) : null,
+        condition_type: params[4] || 'period',
+        start_date: params[5] || null,
+        end_date: params[6] || null,
+        is_popup: params[7] ? Number(params[7]) : 0,
+        created_at: new Date().toISOString()
+      };
+      if (!db.coupons) db.coupons = [];
+      db.coupons.push(newCoupon);
       saveJsonDb(db);
       return { insertId: nextId, affectedRows: 1 };
     }
@@ -1360,6 +1439,48 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         return { affectedRows: 1 };
       }
     }
+
+    if (normalizedSql.includes('update coupons')) {
+      if (normalizedSql.includes('set is_popup = 0')) {
+        if (db.coupons) {
+          db.coupons.forEach(c => c.is_popup = 0);
+          saveJsonDb(db);
+        }
+        return { affectedRows: db.coupons ? db.coupons.length : 0 };
+      }
+      if (normalizedSql.includes('set is_popup =') && normalizedSql.includes('where id =')) {
+        const is_popup = Number(params[0]);
+        const id = Number(params[1]);
+        if (db.coupons) {
+          if (is_popup === 1) {
+            db.coupons.forEach(c => c.is_popup = 0);
+          }
+          const coupon = db.coupons.find(c => c.id === id);
+          if (coupon) {
+            coupon.is_popup = is_popup;
+            saveJsonDb(db);
+            return { affectedRows: 1 };
+          }
+        }
+        return { affectedRows: 0 };
+      }
+      const id = Number(params[7]);
+      const cIdx = db.coupons ? db.coupons.findIndex(c => c.id === id) : -1;
+      if (cIdx > -1 && db.coupons) {
+        db.coupons[cIdx] = {
+          ...db.coupons[cIdx],
+          code: (params[0] || '').toUpperCase(),
+          discount_type: params[1],
+          discount_value: Number(params[2]),
+          product_id: params[3] ? Number(params[3]) : null,
+          condition_type: params[4],
+          start_date: params[5] || null,
+          end_date: params[6] || null
+        };
+        saveJsonDb(db);
+        return { affectedRows: 1 };
+      }
+    }
   }
 
   // 4. DELETE entries
@@ -1426,6 +1547,15 @@ function simulateSQLQuery(sql: string, params: any[]): any {
       db.usage_types = db.usage_types.filter(u => u.id !== id);
       db.product_usage_types = db.product_usage_types.filter(pu => pu.usage_type_id !== id);
       saveJsonDb(db);
+      return { affectedRows: 1 };
+    }
+
+    if (normalizedSql.includes('from coupons')) {
+      const id = Number(params[0]);
+      if (db.coupons) {
+        db.coupons = db.coupons.filter(c => c.id !== id);
+        saveJsonDb(db);
+      }
       return { affectedRows: 1 };
     }
   }
@@ -1768,6 +1898,20 @@ CREATE TABLE IF NOT EXISTS site_settings (
   setting_key VARCHAR(255) UNIQUE NOT NULL,
   setting_value TEXT NOT NULL,
   INDEX (setting_key)
+);
+
+CREATE TABLE IF NOT EXISTS coupons (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(100) UNIQUE NOT NULL,
+  discount_type VARCHAR(50) NOT NULL,
+  discount_value DECIMAL(10,2) NOT NULL,
+  product_id INT NULL,
+  condition_type VARCHAR(50) NOT NULL,
+  start_date TIMESTAMP NULL DEFAULT NULL,
+  end_date TIMESTAMP NULL DEFAULT NULL,
+  is_popup TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
 );
 `;
 

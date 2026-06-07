@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
+import PopupCoupon from './PopupCoupon';
 
 interface ClientLayoutWrapperProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ export default function ClientLayoutWrapper({ children }: ClientLayoutWrapperPro
         <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
+      <PopupCoupon />
     </>
   );
 }

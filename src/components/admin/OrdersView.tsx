@@ -202,11 +202,33 @@ export default function OrdersView() {
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between border-t border-bg-beige/10 pt-4">
-                <span className="text-xs font-bold text-bg-cream/60 uppercase tracking-wider">Total Amount</span>
-                <span className="font-serif text-xl font-bold text-brand-gold">
-                  ₹{(selectedOrder.total_amount || 0).toLocaleString('en-IN')}
-                </span>
+              <div className="flex flex-col gap-2.5 border-t border-bg-beige/10 pt-4">
+                {selectedOrder.coupon_code && (
+                  <>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-bg-cream/50">Items Subtotal</span>
+                      <span className="text-bg-cream/80">
+                        ₹{(Number(selectedOrder.total_amount || 0) + Number(selectedOrder.discount_amount || 0) - 350).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-bg-cream/50">Coupon Discount ({selectedOrder.coupon_code})</span>
+                      <span className="text-red-400 font-semibold">
+                        - ₹{Number(selectedOrder.discount_amount || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-bg-cream/50">Packaging & Dispatch</span>
+                      <span className="text-bg-cream/80">₹350</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs font-bold text-bg-cream/60 uppercase tracking-wider">Total Paid</span>
+                  <span className="font-serif text-xl font-bold text-brand-gold">
+                    ₹{(selectedOrder.total_amount || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
               </div>
 
             </div>

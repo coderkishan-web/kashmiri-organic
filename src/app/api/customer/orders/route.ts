@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
       status: 'paid', // since we simulated successful payment
       shipping_address: JSON.stringify(shipping_address),
       payment_method: payment_method || 'card',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      coupon_code: body.coupon_code || null,
+      discount_amount: body.discount_amount ? Number(body.discount_amount) : 0
     };
 
     db.orders.unshift(newOrder);

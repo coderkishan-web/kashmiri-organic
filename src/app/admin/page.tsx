@@ -17,8 +17,8 @@ export default function AdminDashboardPage() {
   const [adminUser, setAdminUser] = useState<any>(null);
   const [isVerifying, setIsVerifying] = useState(true);
 
-  // Tab State: 'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users' | 'orders' | 'super'
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users' | 'orders' | 'super'>('orders');
+  // Tab State: 'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users' | 'orders' | 'super' | 'coupons'
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'products' | 'blogs' | 'categories' | 'materials' | 'benefits' | 'usage_types' | 'users' | 'orders' | 'super' | 'coupons'>('orders');
   const [isContentManagerOpen, setIsContentManagerOpen] = useState(true);
 
   // Database lists
@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
 
   // Loading & Error states
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +68,8 @@ export default function AdminDashboardPage() {
 
   const [viewingInquiry, setViewingInquiry] = useState<any>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<any>(null);
 
   // Reset search when switching tabs
   useEffect(() => {
@@ -143,6 +146,13 @@ export default function AdminDashboardPage() {
       if (userRes.ok) {
         const data = await userRes.json();
         setUsers(data.users || []);
+      }
+
+      // Fetch coupons
+      const couponRes = await fetch('/api/admin/coupons');
+      if (couponRes.ok) {
+        const data = await couponRes.json();
+        setCoupons(data.coupons || []);
       }
     } catch (err) {
       setActionError('Failed to fetch organic records.');
@@ -614,6 +624,97 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // CRUD submits for Coupons
+  const handleCouponSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setActionError('');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data: any = {
+      code: formData.get('code'),
+      discount_type: formData.get('discount_type'),
+      discount_value: formData.get('discount_value'),
+      product_id: formData.get('product_id') ? Number(formData.get('product_id')) : null,
+      condition_type: formData.get('condition_type'),
+      start_date: formData.get('start_date') || null,
+      end_date: formData.get('end_date') || null,
+    };
+
+    try {
+      let res;
+      if (editingCoupon) {
+        data.id = editingCoupon.id;
+        res = await fetch('/api/admin/coupons', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      } else {
+        res = await fetch('/api/admin/coupons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+      }
+
+      if (res.ok) {
+        setShowCouponModal(false);
+        setEditingCoupon(null);
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to save coupon.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Operation failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCoupon = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    setActionError('');
+    try {
+      const res = await fetch(`/api/admin/coupons?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setCoupons(prev => prev.filter(c => c.id !== id));
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Deletion failed.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete coupon.');
+    }
+  };
+
+  const handleToggleCouponPopup = async (id: number, currentPopupStatus: number) => {
+    setActionError('');
+    const newStatus = currentPopupStatus === 1 ? 0 : 1;
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, toggle_popup: true, is_popup: newStatus }),
+      });
+      if (res.ok) {
+        setCoupons(prev => prev.map(c => {
+          if (c.id === id) {
+            return { ...c, is_popup: newStatus };
+          }
+          return newStatus === 1 ? { ...c, is_popup: 0 } : c;
+        }));
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update popup status.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to toggle popup.');
+    }
+  };
+
   // Helper filters based on query
   const query = searchQuery.toLowerCase();
 
@@ -659,6 +760,13 @@ export default function AdminDashboardPage() {
       c.name.toLowerCase().includes(query) ||
       c.slug.toLowerCase().includes(query) ||
       (c.description || '').toLowerCase().includes(query)
+  );
+
+  const filteredCoupons = coupons.filter(
+    (c) =>
+      c.code.toLowerCase().includes(query) ||
+      c.discount_type.toLowerCase().includes(query) ||
+      c.condition_type.toLowerCase().includes(query)
   );
 
   if (isVerifying) {
@@ -796,6 +904,18 @@ export default function AdminDashboardPage() {
                     <CheckCircle className="w-3.5 h-3.5 shrink-0" />
                     <span className="whitespace-nowrap">Usage Applications</span>
                   </button>
+
+                  <button
+                    onClick={() => setActiveTab('coupons')}
+                    className={`flex items-center gap-2.5 text-[11px] uppercase font-bold tracking-wider px-3.5 py-2.5 rounded-lg transition-all cursor-pointer text-left w-full ${
+                      activeTab === 'coupons' 
+                        ? 'bg-brand-gold text-brand-green shadow font-extrabold' 
+                        : 'text-bg-cream/60 hover:bg-bg-beige/5 hover:text-bg-cream'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">Discounts & Coupons</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -883,6 +1003,7 @@ export default function AdminDashboardPage() {
               {activeTab === 'materials' && 'Material Blog'}
               {activeTab === 'benefits' && 'Wellness Benefits Library'}
               {activeTab === 'usage_types' && 'Recommended Applications'}
+              {activeTab === 'coupons' && 'Discounts & Coupons'}
               {activeTab === 'users' && 'Sourcing Registry & Users'}
               {activeTab === 'orders' && 'Customer Orders'}
               {activeTab === 'super' && 'Super Admin Center'}
@@ -964,6 +1085,15 @@ export default function AdminDashboardPage() {
                 className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
               >
                 <Plus className="w-4 h-4" /> Add Application
+              </button>
+            )}
+
+            {activeTab === 'coupons' && (
+              <button
+                onClick={() => { setEditingCoupon(null); setShowCouponModal(true); }}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-brand-green font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow"
+              >
+                <Plus className="w-4 h-4" /> Add Coupon
               </button>
             )}
           </div>
@@ -1538,6 +1668,108 @@ export default function AdminDashboardPage() {
                     <tr>
                       <td colSpan={3} className="p-8 text-center text-bg-cream/40">
                         No recommended application contexts logged. Click "Add Application" to create one.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB: COUPONS & DISCOUNTS */}
+          {activeTab === 'coupons' && (
+            <div className="bg-bg-cream/5 border border-bg-beige/10 rounded-2xl overflow-hidden luxury-shadow">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="bg-brand-green/95 border-b border-bg-beige/10 text-brand-gold font-bold uppercase tracking-wider sticky top-0 z-10">
+                    <th className="p-4 font-bold">Code</th>
+                    <th className="p-4 font-bold">Discount Value</th>
+                    <th className="p-4 font-bold">Target Product</th>
+                    <th className="p-4 font-bold">Conditions / Period</th>
+                    <th className="p-4 font-bold text-center">Storefront Popup</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bg-beige/10">
+                  {filteredCoupons.map((c) => {
+                    const matchedProduct = products.find(p => p.id === c.product_id);
+                    return (
+                      <tr key={c.id} className="hover:bg-bg-beige/5 transition-colors">
+                        <td className="p-4 font-bold text-bg-cream flex items-center gap-2">
+                          <span className="inline-block bg-white/10 border border-white/10 rounded px-2 py-0.5 text-xs font-mono font-bold text-brand-gold tracking-wide">
+                            {c.code}
+                          </span>
+                        </td>
+                        <td className="p-4 text-bg-cream/90 font-medium">
+                          {c.discount_type === 'percentage' ? `${c.discount_value}%` : `$${c.discount_value}`}
+                        </td>
+                        <td className="p-4 text-bg-cream/80 max-w-xs truncate">
+                          {matchedProduct ? matchedProduct.name : <span className="text-bg-cream/30 italic">All Products</span>}
+                        </td>
+                        <td className="p-4 text-bg-cream/70 font-light leading-relaxed">
+                          {c.condition_type === 'period' && (
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-brand-gold">Period Offer</span>
+                              <span className="text-[10px] text-bg-cream/50">
+                                {c.start_date ? new Date(c.start_date).toLocaleDateString() : 'Immediate'} -{' '}
+                                {c.end_date ? new Date(c.end_date).toLocaleDateString() : 'Indefinite'}
+                              </span>
+                            </div>
+                          )}
+                          {c.condition_type === 'two_days' && (
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-blue-400">48-Hour Window</span>
+                              <span className="text-[10px] text-bg-cream/50">
+                                Valid 2 days from creation
+                              </span>
+                            </div>
+                          )}
+                          {c.condition_type === 'first_purchase' && (
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-purple-400">New Customer Reward</span>
+                              <span className="text-[10px] text-bg-cream/50">
+                                Valid for first time purchases
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-4 text-center">
+                          <button
+                            onClick={() => handleToggleCouponPopup(c.id, c.is_popup)}
+                            className={`px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1 ${
+                              c.is_popup === 1
+                                ? 'bg-brand-gold text-brand-green border border-brand-gold shadow'
+                                : 'bg-transparent text-bg-cream/40 border border-bg-beige/10 hover:border-brand-gold/40 hover:text-bg-cream'
+                            }`}
+                          >
+                            <Sparkles className="w-3 h-3 shrink-0" />
+                            {c.is_popup === 1 ? 'Active Popup' : 'Set as Popup'}
+                          </button>
+                        </td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingCoupon(c);
+                              setShowCouponModal(true);
+                            }}
+                            className="text-brand-gold hover:bg-brand-gold/10 p-1.5 rounded-lg transition-colors cursor-pointer inline-block"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCoupon(c.id)}
+                            className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors cursor-pointer inline-block"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {filteredCoupons.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-bg-cream/40">
+                        No coupons or discounts logged. Click "Add Coupon" to create one.
                       </td>
                     </tr>
                   )}
@@ -2599,6 +2831,154 @@ export default function AdminDashboardPage() {
                 className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2 cursor-pointer shadow disabled:opacity-60"
               >
                 {isLoading ? 'Saving...' : 'Save Application'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 7: CREATE / EDIT COUPON */}
+      {showCouponModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-green/80 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setShowCouponModal(false)}>
+          <div className="bg-bg-cream text-text-primary rounded-3xl p-6 sm:p-8 max-w-md w-full border border-brand-green/10 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="flex items-center justify-between pb-4 border-b border-brand-green/5 mb-6">
+              <h3 className="font-serif text-2xl font-bold text-brand-green">
+                {editingCoupon ? 'Edit Coupon & Discount' : 'Create Coupon & Discount'}
+              </h3>
+              <button
+                onClick={() => setShowCouponModal(false)}
+                className="text-text-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCouponSubmit} className="flex flex-col gap-4 text-xs">
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Coupon Code</label>
+                <input
+                  type="text"
+                  required
+                  name="code"
+                  defaultValue={editingCoupon?.code || ''}
+                  placeholder="e.g. KESAR15"
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary font-mono uppercase"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Discount Type</label>
+                  <select
+                    name="discount_type"
+                    defaultValue={editingCoupon?.discount_type || 'percentage'}
+                    className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount ($)</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Discount Value</label>
+                  <input
+                    type="number"
+                    required
+                    step="0.01"
+                    name="discount_value"
+                    defaultValue={editingCoupon?.discount_value || ''}
+                    placeholder="e.g. 15 or 10.00"
+                    className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Applicable Product</label>
+                <select
+                  name="product_id"
+                  defaultValue={editingCoupon?.product_id || ''}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                >
+                  <option value="">None / All Products</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Eligibility Criteria</label>
+                <select
+                  name="condition_type"
+                  defaultValue={editingCoupon?.condition_type || 'period'}
+                  onChange={(e) => {
+                    const dateFields = document.getElementById('coupon_date_fields');
+                    if (dateFields) {
+                      if (e.target.value === 'period') {
+                        dateFields.classList.remove('hidden');
+                      } else {
+                        dateFields.classList.add('hidden');
+                      }
+                    }
+                  }}
+                  className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                >
+                  <option value="period">Valid During Specific Dates</option>
+                  <option value="two_days">Valid for 48 Hours After Activation</option>
+                  <option value="first_purchase">First Time Purchases Only</option>
+                </select>
+              </div>
+
+              <div 
+                id="coupon_date_fields" 
+                className={editingCoupon?.condition_type && editingCoupon.condition_type !== 'period' ? 'hidden' : ''}
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">Start Date</label>
+                    <input
+                      type="datetime-local"
+                      name="start_date"
+                      defaultValue={
+                        editingCoupon?.start_date
+                          ? new Date(new Date(editingCoupon.start_date).getTime() - new Date().getTimezoneOffset() * 60000)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ''
+                      }
+                      className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-brand-green mb-1">End Date</label>
+                    <input
+                      type="datetime-local"
+                      name="end_date"
+                      defaultValue={
+                        editingCoupon?.end_date
+                          ? new Date(new Date(editingCoupon.end_date).getTime() - new Date().getTimezoneOffset() * 60000)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ''
+                      }
+                      className="bg-bg-beige/30 p-2.5 rounded-lg border border-brand-green/10 focus:outline-none focus:border-brand-gold text-text-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream font-bold text-xs uppercase tracking-wider py-3 rounded-xl mt-2 cursor-pointer shadow disabled:opacity-60"
+              >
+                {isLoading ? 'Saving...' : 'Save Coupon'}
               </button>
             </form>
           </div>

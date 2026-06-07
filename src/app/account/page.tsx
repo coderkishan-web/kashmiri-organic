@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   User, Phone, Mail, Award, Clock, ShoppingBag, LogOut, Loader2, 
-  CheckCircle, Edit3, ArrowRight, ShieldCheck, Sparkles, MapPin 
+  CheckCircle, Edit3, ShieldCheck, MapPin 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,41 +28,6 @@ export default function CustomerAccountPage() {
   // Real orders state
   const [orders, setOrders] = useState<any[]>([]);
 
-  // Message parsing helpers
-  const parseItems = (msg: string) => {
-    if (!msg) return 'Direct Sourcing Order';
-    const lines = msg.split('\n');
-    const itemsLines = lines.filter(l => l.trim().startsWith('- '));
-    if (itemsLines.length > 0) {
-      return itemsLines.map(l => l.replace('- ', '').trim()).join(', ');
-    }
-    return 'Direct Sourcing Order';
-  };
-
-  const parseTotal = (msg: string) => {
-    if (!msg) return 'Custom Quote';
-    const lines = msg.split('\n');
-    const totalLine = lines.find(l => l.toLowerCase().includes('total sourcing cost'));
-    if (totalLine) {
-      return totalLine.split(':')?.[1]?.trim() || 'Custom Quote';
-    }
-    return 'Custom Quote';
-  };
-
-  const getFulfillmentOrigin = (prodId: any) => {
-    if (prodId === 1 || prodId === '1') return 'Pampore Saffron Fields';
-    if (prodId === 2 || prodId === '2') return 'Kupwara Acacia Forest';
-    if (prodId === 3 || prodId === '3') return 'Gurez Valley Apiary';
-    if (prodId === 4 || prodId === '4') return 'Srinagar Craft Hub';
-    return 'Valley Archive Depot';
-  };
-
-  const mapStatus = (status: string) => {
-    if (status === 'replied') return 'Delivered';
-    if (status === 'reviewed') return 'In Transit';
-    return 'Placed';
-  };
-
   // 1. Authenticate customer and load profile details on load
   useEffect(() => {
     fetch('/api/customer/profile')
@@ -78,7 +43,18 @@ export default function CustomerAccountPage() {
           setUser(data.user);
           setName(data.user.name || '');
           setEmail(data.user.email || '');
-          setOrders(data.orders || []);
+
+          // Fetch real orders
+          if (data.user.phone) {
+            fetch(`/api/customer/orders/list?phone=${data.user.phone}`)
+              .then((res) => res.json())
+              .then((orderData) => {
+                if (orderData.orders) {
+                  setOrders(orderData.orders);
+                }
+              })
+              .catch(err => console.error('Failed fetching orders', err));
+          }
         } else {
           router.push('/account/login');
         }
@@ -127,6 +103,15 @@ export default function CustomerAccountPage() {
     router.push('/');
   };
 
+  const parseItems = (itemsStr: string) => {
+    try {
+      const items = JSON.parse(itemsStr);
+      return items.map((i: any) => `${i.name} (x${i.quantity})`).join(', ');
+    } catch {
+      return 'Order Items';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1B3527] flex items-center justify-center text-[#FAF8F5] gap-2">
@@ -140,13 +125,11 @@ export default function CustomerAccountPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1B3527] pt-28 pb-16 px-4 sm:px-6 lg:px-8 relative">
-      {/* Background ambient accents */}
       <div className="absolute top-0 right-0 w-[40vw] h-[40vw] rounded-full bg-[#1B3527]/3 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[45vw] h-[45vw] rounded-full bg-[#C5A880]/4 blur-[130px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
-        {/* Title Header */}
         <div className="col-span-12 border-b border-[#1B3527]/10 pb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#C5A880] flex items-center gap-1.5">
@@ -165,10 +148,8 @@ export default function CustomerAccountPage() {
           </button>
         </div>
 
-        {/* Left Side: Client profile card */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="bg-[#1B3527] text-[#FAF8F5] p-6 rounded-3xl shadow-xl relative overflow-hidden">
-            {/* Background design */}
             <div className="absolute right-0 bottom-0 opacity-[0.03] translate-x-4 translate-y-4">
               <User className="w-48 h-48" />
             </div>
@@ -216,21 +197,9 @@ export default function CustomerAccountPage() {
               </button>
             )}
           </div>
-
-          <div className="bg-[#FAF8F5] border border-[#1B3527]/10 p-6 rounded-3xl flex flex-col gap-4">
-            <h4 className="text-[10px] uppercase font-bold tracking-widest text-[#C5A880] flex items-center gap-1">
-              <Award className="w-4 h-4 text-[#C5A880]" /> Quality Guarantee
-            </h4>
-            <p className="text-xs text-[#1B3527]/70 leading-relaxed font-light">
-              Our products are GI-tagged and verified by the Srinagar Craft Development center. Thank you for supporting rural artisan cooperatives.
-            </p>
-          </div>
         </div>
 
-        {/* Right Side: Tab panel and actions */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          
-          {/* Notifications */}
           {error && (
             <div className="p-4 rounded-xl bg-red-50 border border-red-500/10 text-red-800 text-xs font-light">
               {error}
@@ -264,7 +233,6 @@ export default function CustomerAccountPage() {
                         id="edit-name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Aditi Sharma"
                         className="w-full bg-[#FAF8F5] text-[#1B3527] text-sm px-4 py-3 rounded-xl border border-[#1B3527]/15 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-all"
                         disabled={actionLoading}
                         required
@@ -280,7 +248,6 @@ export default function CustomerAccountPage() {
                         id="edit-email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="e.g. client@example.com"
                         className="w-full bg-[#FAF8F5] text-[#1B3527] text-sm px-4 py-3 rounded-xl border border-[#1B3527]/15 focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-all"
                         disabled={actionLoading}
                       />
@@ -293,14 +260,7 @@ export default function CustomerAccountPage() {
                       disabled={actionLoading}
                       className="bg-[#1B3527] hover:bg-[#1B3527]/90 text-[#FAF8F5] font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl flex items-center gap-1.5 cursor-pointer shadow transition-all active:scale-[0.98]"
                     >
-                      {actionLoading ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Updating...</span>
-                        </>
-                      ) : (
-                        <span>Save Coordinates</span>
-                      )}
+                      {actionLoading ? <span>Updating...</span> : <span>Save Coordinates</span>}
                     </button>
 
                     <button
@@ -316,48 +276,58 @@ export default function CustomerAccountPage() {
             ) : null}
           </AnimatePresence>
 
-          {/* Sourcing Orders grid */}
-          <div className="bg-[#FAF8F5] border border-[#1B3527]/10 rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="bg-[#FAF8F5] border border-[#1B3527]/10 rounded-3xl p-6 sm:p-8 flex flex-col h-full max-h-[600px]">
+            <div className="flex items-center gap-2 mb-6 shrink-0">
               <ShoppingBag className="w-5 h-5 text-[#C5A880]" />
-              <h3 className="font-serif text-xl font-bold text-[#1B3527]">Active Sourcing Orders</h3>
+              <h3 className="font-serif text-xl font-bold text-[#1B3527]">Sourcing Order History</h3>
             </div>
 
-            <div className="space-y-4">
+            {/* Scrollable container, hide scrollbar. 
+                Height of one order item is roughly ~120px. 
+                4 orders = ~480px + gap. We'll set a max-height that roughly fits 4 orders. */}
+            <div className="space-y-4 overflow-y-auto flex-1 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
               {orders.map((ord) => (
                 <div 
                   key={ord.id}
-                  className="bg-[#FAF8F5] border border-[#1B3527]/5 hover:border-[#C5A880]/30 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300 shadow-sm"
+                  className="bg-white border border-[#1B3527]/5 hover:border-[#C5A880]/30 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300 shadow-sm"
                 >
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-serif font-bold text-sm text-[#1B3527]">KO-ORD-2026-{ord.id}</span>
+                      <span className="font-serif font-bold text-sm text-[#1B3527]">{ord.id}</span>
                       <span className="text-[10px] bg-[#FAF8F5] border border-[#1B3527]/10 px-2 py-0.5 rounded-full text-[#1B3527]/60 font-semibold uppercase">
                         {new Date(ord.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-xs text-[#1B3527]/80 font-medium">{parseItems(ord.message)}</p>
+                    <p className="text-xs text-[#1B3527]/80 font-medium line-clamp-2">
+                      {parseItems(ord.items)}
+                    </p>
                     <div className="flex items-center gap-1 text-[10px] text-[#1B3527]/50 font-light">
                       <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
-                      <span>Fulfillment Depot: {getFulfillmentOrigin(ord.product_id)}</span>
+                      <span>{(() => {
+                        try {
+                          return JSON.parse(ord.shipping_address).city;
+                        } catch {
+                          return 'Destination address provided';
+                        }
+                      })()}</span>
                     </div>
                   </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-[#1B3527]/5 pt-3 sm:pt-0">
-                    <span className="font-serif text-[#1B3527] font-bold text-sm">{parseTotal(ord.message)}</span>
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-[#1B3527]/5 pt-3 sm:pt-0 shrink-0">
+                    <span className="font-serif text-[#1B3527] font-bold text-sm">₹{ord.total_amount?.toLocaleString('en-IN') || '0'}</span>
                     <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
-                      mapStatus(ord.status) === 'Delivered' 
+                      ord.status === 'delivered' 
                         ? 'bg-emerald-100 text-emerald-800' 
-                        : mapStatus(ord.status) === 'In Transit'
+                        : ord.status === 'shipped' || ord.status === 'paid'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-[#C5A880]/20 text-[#1B3527]'
                     }`}>
-                      {mapStatus(ord.status) === 'Delivered' ? (
+                      {ord.status === 'delivered' ? (
                         <CheckCircle className="w-3 h-3 text-emerald-800" />
                       ) : (
                         <Clock className="w-3 h-3 text-inherit" />
                       )}
-                      {mapStatus(ord.status)}
+                      {ord.status}
                     </span>
                   </div>
                 </div>

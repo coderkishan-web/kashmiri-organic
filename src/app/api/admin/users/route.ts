@@ -10,7 +10,7 @@ async function getAdminUser(req: NextRequest) {
   if (!token) return null;
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (decoded.role !== 'admin') return null;
+    if (decoded.role !== 'admin' && decoded.role !== 'super_admin') return null;
     return decoded;
   } catch (err) {
     return null;
@@ -35,6 +35,10 @@ export async function GET(req: NextRequest) {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      address: user.address || null,
+      city: user.city || null,
+      pinCode: user.pinCode || null,
+      country: user.country || null,
       created_at: user.created_at
     }));
 

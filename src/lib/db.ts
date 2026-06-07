@@ -13,6 +13,10 @@ export interface User {
   phone?: string | null;
   otp?: string | null;
   otp_expiry?: string | null;
+  address?: string | null;
+  city?: string | null;
+  pinCode?: string | null;
+  country?: string | null;
 }
 
 export interface Category {
@@ -111,11 +115,33 @@ export interface Inquiry {
   email: string;
   phone: string;
   company_name: string;
-  inquiry_type: 'whatsapp' | 'quote' | 'bulk' | 'contact';
+  inquiry_type: 'whatsapp' | 'quote' | 'bulk' | 'contact' | 'order';
   message: string;
   product_id: number | null;
   product_name?: string;
   status: 'new' | 'read' | 'processed';
+  created_at: string;
+}
+
+export interface Order {
+  id: string; // e.g., KO-ORD-2026-123
+  user_phone: string;
+  user_name: string;
+  user_email?: string;
+  items: string; // JSON string of cart items
+  total_amount: number;
+  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  shipping_address: string; // JSON string of { name, address, pin_code, city, country }
+  payment_method: string;
+  created_at: string;
+}
+
+export interface AdminActivity {
+  id: number;
+  admin_id: number;
+  admin_name: string;
+  action: string;
+  details: string;
   created_at: string;
 }
 
@@ -171,6 +197,8 @@ interface LocalDBState {
   certifications: Certification[];
   seo: SEOEntry[];
   site_settings: SiteSetting[];
+  orders: Order[];
+  admin_activities: AdminActivity[];
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -195,7 +223,7 @@ const SEED_DATA: LocalDBState = {
       email: 'admin@kashmiriorganic.com',
       // password is 'kashmir@123'
       password_hash: '$2a$10$tMhP4p07n6z9YgK/YvKgeOSN.CymcWdM82oK5T5B/iB4lFskG64U.',
-      role: 'admin',
+      role: 'super_admin',
       created_at: new Date().toISOString(),
       phone: null,
       otp: null,
@@ -684,7 +712,9 @@ const SEED_DATA: LocalDBState = {
     { id: 4, setting_key: 'site_whatsapp', setting_value: '+919876543210' },
     { id: 5, setting_key: 'site_address', setting_value: 'Pampore Organic Farms, Highway 1A, Pulwama, Jammu & Kashmir, 192121' },
     { id: 6, setting_key: 'instagram_url', setting_value: 'https://instagram.com/kashmiriorganic' }
-  ]
+  ],
+  orders: [],
+  admin_activities: []
 };
 
 // Initialize JSON database if it doesn't exist

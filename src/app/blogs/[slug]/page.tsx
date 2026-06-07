@@ -53,8 +53,8 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
   // Photographic logs
   const blogImages: Record<number, string> = {
-    1: 'https://images.unsplash.com/photo-1508747703725-719ae2c98295?auto=format&fit=crop&w=1200&q=80',
-    2: 'https://images.unsplash.com/photo-1444212477490-ca407925329e?auto=format&fit=crop&w=1200&q=80',
+    1: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=1200&q=80',
+    2: 'https://images.unsplash.com/photo-1546482502-61d0092288d6?auto=format&fit=crop&w=1200&q=80',
   };
 
   const productImages: Record<number, string> = {
@@ -125,10 +125,10 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
         
         <div className="flex items-center justify-center gap-6 text-xs text-text-secondary pb-6 border-b border-brand-green/5">
           <div className="flex items-center gap-1">
-            <User className="w-4 h-4 text-brand-brown" /> <span>{blog.author}</span>
+            <User className="w-4 h-4 text-brand-brown" /> <span>{blog.author || 'Editorial Team'}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4 text-brand-sage" /> <span>{blog.publish_date}</span>
+            <Calendar className="w-4 h-4 text-brand-sage" /> <span>{blog.publish_date || 'Recent'}</span>
           </div>
         </div>
       </section>

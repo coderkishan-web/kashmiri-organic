@@ -9,7 +9,7 @@ async function verifyAdmin(req: NextRequest) {
   if (!token) return null;
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (decoded.role !== 'admin') return null;
+    if (decoded.role !== 'admin' && decoded.role !== 'super_admin') return null;
     return decoded;
   } catch (e) {
     return null;

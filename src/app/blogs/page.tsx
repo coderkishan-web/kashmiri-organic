@@ -31,8 +31,8 @@ export default async function BlogsPage({ searchParams }: BlogsPageProps) {
 
   // Blog image mapping
   const blogImages: Record<number, string> = {
-    1: 'https://images.unsplash.com/photo-1508747703725-719ae2c98295?auto=format&fit=crop&w=1200&q=80',
-    2: 'https://images.unsplash.com/photo-1444212477490-ca407925329e?auto=format&fit=crop&w=1200&q=80',
+    1: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=1200&q=80',
+    2: 'https://images.unsplash.com/photo-1546482502-61d0092288d6?auto=format&fit=crop&w=1200&q=80',
   };
 
   // Find the featured (newest) blog
@@ -120,10 +120,10 @@ export default async function BlogsPage({ searchParams }: BlogsPageProps) {
               <div className="border-t border-brand-green/5 pt-6 mt-8 flex items-center justify-between text-xs text-text-muted">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-brand-brown" /> <span>{featuredBlog.author}</span>
+                    <User className="w-3.5 h-3.5 text-brand-brown" /> <span>{featuredBlog.author || 'Editorial Team'}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-brand-sage" /> <span>{featuredBlog.publish_date}</span>
+                    <Calendar className="w-3.5 h-3.5 text-brand-sage" /> <span>{featuredBlog.publish_date || 'Recent'}</span>
                   </div>
                 </div>
                 
@@ -171,7 +171,7 @@ export default async function BlogsPage({ searchParams }: BlogsPageProps) {
                 <div className="border-t border-brand-green/5 pt-4 flex items-center justify-between text-[11px] text-text-muted mt-auto">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-brand-sage shrink-0" />
-                    <span>{blog.publish_date}</span>
+                    <span>{blog.publish_date || 'Recent'}</span>
                   </div>
                   
                   <Link

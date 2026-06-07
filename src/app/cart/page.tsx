@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Trash2, Plus, Minus, ShoppingBag, Loader2, CheckCircle, 
-  ArrowRight, ShieldCheck, ArrowLeft, RefreshCw, ShoppingCart 
+  ArrowRight, ShieldCheck, ArrowLeft, ShoppingCart, MapPin, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,9 +18,19 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   
   // Checkout process states
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'success'>('cart');
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'payment' | 'success'>('cart');
   const [orderId, setOrderId] = useState('');
   const [placingOrder, setPlacingOrder] = useState(false);
+
+  // Shipping Form State
+  const [shippingDetails, setShippingDetails] = useState({
+    name: '',
+    email: '',
+    address: '',
+    pinCode: '',
+    city: '',
+    country: 'India'
+  });
 
   // 1. Load cart and verify session on mount
   useEffect(() => {
@@ -40,6 +50,15 @@ export default function CartPage() {
       .then((data) => {
         if (data?.authenticated) {
           setUser(data.user);
+          setShippingDetails(prev => ({ 
+            ...prev, 
+            name: data.user.name || '',
+            email: data.user.email || '',
+            address: data.user.address || prev.address,
+            city: data.user.city || prev.city,
+            pinCode: data.user.pinCode || prev.pinCode,
+            country: data.user.country || prev.country
+          }));
         }
       })
       .catch((err) => console.error('Failed checking authentication', err))
@@ -70,7 +89,6 @@ export default function CartPage() {
     saveCart(updated);
   };
 
-  // Clear Cart
   const handleClearCart = () => {
     saveCart([]);
   };
@@ -80,46 +98,44 @@ export default function CartPage() {
   const estShipping = subtotal > 0 ? 350 : 0; // Flat packaging / transport fee
   const total = subtotal + estShipping;
 
-  // Handle Checkout Sourcing Order
-  const handleCheckout = async () => {
+  const proceedToShipping = () => {
     if (!user) {
-      // If session expired, redirect to login page
       router.push('/account/login?redirect=/cart');
       return;
     }
+    setCheckoutStep('shipping');
+  };
 
+  const proceedToPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCheckoutStep('payment');
+  };
+
+  const handlePlaceOrder = async () => {
     setPlacingOrder(true);
     
-    // Build order summary message
-    const itemsSummary = cartItems
-      .map((item) => `- ${item.name} (Qty: ${item.quantity}) - ₹${(item.price * item.quantity).toLocaleString('en-IN')}`)
-      .join('\n');
-    
-    const message = `Order checkout coordinates summary:\n${itemsSummary}\n\nSubtotal: ₹${subtotal.toLocaleString('en-IN')}\nPackaging/Dispatch: ₹${estShipping.toLocaleString('en-IN')}\nTotal Sourcing Cost: ₹${total.toLocaleString('en-IN')}`;
+    // Simulate payment gateway delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     try {
-      const res = await fetch('/api/inquiries', {
+      const res = await fetch('/api/customer/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: user.name || `Client ${user.phone}`,
-          email: user.email || 'customer@kashmiriorganic.com',
-          phone: user.phone,
-          companyName: 'Direct Checkout',
-          inquiryType: 'order',
-          message,
-          productId: cartItems[0]?.id || null, // Primary item ID
+          items: cartItems,
+          total_amount: total,
+          shipping_address: shippingDetails,
+          payment_method: 'Credit Card / UPI',
+          user: user
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        const generatedId = `KO-ORD-2026-${Math.floor(100 + Math.random() * 900)}`;
-        setOrderId(generatedId);
+        setOrderId(data.order.id);
         setCheckoutStep('success');
-        // Clear cart
-        saveCart([]);
+        saveCart([]); // Clear cart
       } else {
         alert(data.error || 'Failed to submit order.');
       }
@@ -143,14 +159,14 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1B3527] pt-28 pb-16 px-4 sm:px-6 lg:px-8 relative">
-      {/* Background ambient accents */}
       <div className="absolute top-0 right-0 w-[40vw] h-[40vw] rounded-full bg-[#1B3527]/3 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[45vw] h-[45vw] rounded-full bg-[#C5A880]/4 blur-[130px] pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative z-10">
-        
         <AnimatePresence mode="wait">
-          {checkoutStep === 'cart' ? (
+          
+          {/* STEP 1: CART */}
+          {checkoutStep === 'cart' && (
             <motion.div
               key="cart-step"
               initial={{ opacity: 0, y: 15 }}
@@ -158,7 +174,6 @@ export default function CartPage() {
               exit={{ opacity: 0, y: -15 }}
               className="grid grid-cols-1 lg:grid-cols-12 gap-8"
             >
-              {/* Left Column: Cart items */}
               <div className="lg:col-span-8 space-y-6">
                 <div className="flex items-center justify-between border-b border-[#1B3527]/10 pb-4">
                   <div>
@@ -184,14 +199,9 @@ export default function CartPage() {
                         key={item.id}
                         className="bg-white border border-[#1B3527]/5 hover:border-[#C5A880]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300 shadow-sm"
                       >
-                        {/* Left side: Item image and name */}
                         <div className="flex items-center gap-4 w-full sm:w-auto">
                           <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#F1EDE6] border border-[#1B3527]/10 shrink-0">
-                            <img
-                              src={item.image_url}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                           <div>
                             <h3 className="font-serif text-sm font-bold leading-tight">
@@ -205,42 +215,20 @@ export default function CartPage() {
                           </div>
                         </div>
 
-                        {/* Right side: Quantity control, price, and delete */}
                         <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 border-[#1B3527]/5 pt-3 sm:pt-0">
-                          {/* Quantity selector */}
                           <div className="flex items-center bg-[#F1EDE6]/50 border border-[#1B3527]/10 rounded-lg p-1">
-                            <button
-                              onClick={() => handleQuantityChange(item.id, -1)}
-                              className="w-6 h-6 flex items-center justify-center text-[#1B3527] hover:text-[#C5A880] cursor-pointer"
-                            >
+                            <button onClick={() => handleQuantityChange(item.id, -1)} className="w-6 h-6 flex items-center justify-center text-[#1B3527] hover:text-[#C5A880] cursor-pointer">
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="w-8 text-center text-xs font-bold font-mono">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleQuantityChange(item.id, 1)}
-                              className="w-6 h-6 flex items-center justify-center text-[#1B3527] hover:text-[#C5A880] cursor-pointer"
-                            >
+                            <span className="w-8 text-center text-xs font-bold font-mono">{item.quantity}</span>
+                            <button onClick={() => handleQuantityChange(item.id, 1)} className="w-6 h-6 flex items-center justify-center text-[#1B3527] hover:text-[#C5A880] cursor-pointer">
                               <Plus className="w-3.5 h-3.5" />
                             </button>
                           </div>
-
-                          {/* Item Total Price */}
                           <div className="text-right min-w-[80px]">
-                            <span className="font-serif text-sm font-bold">
-                              ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                            </span>
-                            <span className="block text-[8px] text-[#8A968E] font-light">
-                              ₹{item.price.toLocaleString('en-IN')} each
-                            </span>
+                            <span className="font-serif text-sm font-bold">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                           </div>
-
-                          {/* Delete Action */}
-                          <button
-                            onClick={() => handleRemoveItem(item.id)}
-                            className="text-[#8A968E] hover:text-red-700 cursor-pointer"
-                          >
+                          <button onClick={() => handleRemoveItem(item.id)} className="text-[#8A968E] hover:text-red-700 cursor-pointer">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -253,35 +241,19 @@ export default function CartPage() {
                       <ShoppingBag className="w-7 h-7 text-[#C5A880]" />
                     </div>
                     <h3 className="font-serif text-xl font-bold">Your cart is empty</h3>
-                    <p className="text-xs text-[#8A968E] max-w-xs leading-relaxed font-light">
-                      It seems you haven't added any premium Kashmiri products yet. Browse our catalog and start sourcing.
-                    </p>
-                    <Link
-                      href="/products"
-                      className="mt-2 bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300"
-                    >
+                    <Link href="/products" className="mt-2 bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
                       Browse Catalog
                     </Link>
                   </div>
                 )}
-                
-                {/* Back button */}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider hover:text-[#C5A880] transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Continue Sourcing
-                </Link>
               </div>
 
-              {/* Right Column: Checkout Breakdown */}
               <div className="lg:col-span-4">
                 <div className="bg-white border border-[#1B3527]/10 rounded-3xl p-6 shadow-md flex flex-col gap-6 sticky top-28">
                   <div>
                     <h3 className="font-serif text-lg font-bold">Sourcing Summary</h3>
                     <div className="w-full h-px bg-[#1B3527]/5 my-3" />
                   </div>
-
                   <div className="space-y-3.5 text-xs font-light">
                     <div className="flex justify-between">
                       <span className="text-[#8A968E]">Items Subtotal</span>
@@ -294,57 +266,195 @@ export default function CartPage() {
                     <div className="w-full h-px bg-[#1B3527]/5 my-1" />
                     <div className="flex justify-between text-sm">
                       <span className="font-serif font-bold">Total Sourcing Cost</span>
-                      <span className="font-serif font-black text-[#1B3527]">
-                        ₹{total.toLocaleString('en-IN')}
-                      </span>
+                      <span className="font-serif font-black text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
-
-                  {/* Checkout Button */}
                   <button
-                    onClick={handleCheckout}
-                    disabled={cartItems.length === 0 || placingOrder}
+                    onClick={proceedToShipping}
+                    disabled={cartItems.length === 0}
                     className="w-full bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] font-bold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {placingOrder ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Verifying Sourcing...</span>
-                      </>
-                    ) : !user ? (
-                      <>
-                        <span>Login to Place Order</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    ) : (
-                      <>
-                        <span>Submit Sourcing Order</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
+                    {!user ? <span>Login to Checkout</span> : <span>Proceed to Shipping</span>}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
-
-                  {/* Extra Coordinates Box */}
-                  <div className="bg-[#FAF8F5] border border-[#1B3527]/5 rounded-2xl p-4 space-y-2.5">
-                    <span className="text-[8px] uppercase font-bold tracking-widest text-[#C5A880] flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#C5A880]" /> Sourcing Protocols
-                    </span>
-                    <p className="text-[10px] text-[#4E6254] leading-normal font-light">
-                      {user ? (
-                        <>
-                          Authorized for account: <strong className="font-semibold">{user.phone}</strong>. Sourcing orders are mapped to client accounts for fulfillment tracking.
-                        </>
-                      ) : (
-                        <>
-                          Please login using your mobile OTP coordinates to complete this order.
-                        </>
-                      )}
-                    </p>
-                  </div>
                 </div>
               </div>
             </motion.div>
-          ) : (
+          )}
+
+          {/* STEP 2: SHIPPING DETAILS */}
+          {checkoutStep === 'shipping' && (
+            <motion.div
+              key="shipping-step"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-2xl mx-auto"
+            >
+              <button 
+                onClick={() => setCheckoutStep('cart')}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#8A968E] hover:text-[#C5A880] mb-6 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back to Cart
+              </button>
+
+              <div className="bg-white border border-[#1B3527]/10 rounded-3xl p-8 shadow-md">
+                <div className="flex items-center gap-3 border-b border-[#1B3527]/10 pb-4 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-[#F1EDE6] flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-[#C5A880]" />
+                  </div>
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold">Shipping Coordinates</h2>
+                    <span className="text-[10px] text-[#8A968E] uppercase tracking-widest">Where should we deliver?</span>
+                  </div>
+                </div>
+
+                <form onSubmit={proceedToPayment} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">Full Name</label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+                      value={shippingDetails.name}
+                      onChange={(e) => setShippingDetails({...shippingDetails, name: e.target.value})}
+                      placeholder="Recipient's Name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">Email Address</label>
+                    <input
+                      required
+                      type="email"
+                      className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+                      value={shippingDetails.email}
+                      onChange={(e) => setShippingDetails({...shippingDetails, email: e.target.value})}
+                      placeholder="Email for order updates"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">Street Address</label>
+                    <textarea
+                      required
+                      className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors min-h-[100px]"
+                      value={shippingDetails.address}
+                      onChange={(e) => setShippingDetails({...shippingDetails, address: e.target.value})}
+                      placeholder="House No, Building, Street Name"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">Pin Code</label>
+                      <input
+                        required
+                        type="text"
+                        className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+                        value={shippingDetails.pinCode}
+                        onChange={(e) => setShippingDetails({...shippingDetails, pinCode: e.target.value})}
+                        placeholder="Postal Code"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">City</label>
+                      <input
+                        required
+                        type="text"
+                        className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+                        value={shippingDetails.city}
+                        onChange={(e) => setShippingDetails({...shippingDetails, city: e.target.value})}
+                        placeholder="City / District"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1B3527] mb-1.5 uppercase tracking-wider">Country</label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full bg-[#FAF8F5] border border-[#1B3527]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+                      value={shippingDetails.country}
+                      onChange={(e) => setShippingDetails({...shippingDetails, country: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="pt-4 mt-6 border-t border-[#1B3527]/10">
+                    <button
+                      type="submit"
+                      className="w-full bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] font-bold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all active:scale-[0.97]"
+                    >
+                      <span>Proceed to Payment</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 3: MOCK PAYMENT */}
+          {checkoutStep === 'payment' && (
+            <motion.div
+              key="payment-step"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="max-w-md mx-auto bg-white border border-[#1B3527]/10 rounded-3xl p-8 shadow-xl"
+            >
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 rounded-full bg-[#F1EDE6] flex items-center justify-center mx-auto mb-4 border border-[#1B3527]/5">
+                  <CreditCard className="w-8 h-8 text-[#C5A880]" />
+                </div>
+                <h2 className="font-serif text-2xl font-bold">Secure Payment</h2>
+                <p className="text-xs text-[#8A968E] mt-1">Total to pay: <span className="font-bold text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span></p>
+              </div>
+
+              <div className="bg-[#FAF8F5] border border-[#1B3527]/5 rounded-2xl p-4 mb-6">
+                <p className="text-[10px] text-center text-[#4E6254] mb-4">
+                  For demonstration purposes, this is a simulated payment gateway. Clicking "Pay Now" will mock a successful transaction.
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="h-10 bg-white border border-[#1B3527]/10 rounded-lg flex items-center px-4 text-xs font-mono text-[#8A968E]">
+                    **** **** **** 4242
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="h-10 bg-white border border-[#1B3527]/10 rounded-lg flex items-center px-4 text-xs font-mono text-[#8A968E]">MM / YY</div>
+                    <div className="h-10 bg-white border border-[#1B3527]/10 rounded-lg flex items-center px-4 text-xs font-mono text-[#8A968E]">CVC</div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handlePlaceOrder}
+                disabled={placingOrder}
+                className="w-full bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] font-bold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all active:scale-[0.97] disabled:opacity-50"
+              >
+                {placingOrder ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <span>Pay ₹{total.toLocaleString('en-IN')} Now</span>
+                )}
+              </button>
+
+              <button 
+                onClick={() => setCheckoutStep('shipping')}
+                className="w-full mt-4 text-xs font-bold uppercase tracking-wider text-[#8A968E] hover:text-[#1B3527] transition-colors"
+                disabled={placingOrder}
+              >
+                Cancel & Go Back
+              </button>
+            </motion.div>
+          )}
+
+          {/* STEP 4: SUCCESS */}
+          {checkoutStep === 'success' && (
             <motion.div
               key="success-step"
               initial={{ scale: 0.95, opacity: 0 }}
@@ -357,22 +467,26 @@ export default function CartPage() {
 
               <div className="space-y-2">
                 <span className="text-[9px] uppercase font-bold tracking-widest text-[#C5A880]">
-                  Order Placed Successfully
+                  Payment Successful
                 </span>
-                <h2 className="font-serif text-2xl font-bold">Thank You For Sourcing</h2>
+                <h2 className="font-serif text-2xl font-bold">Thank You For Your Order</h2>
                 <p className="text-xs text-[#8A968E] max-w-xs mx-auto leading-relaxed font-light">
-                  Your batch allocation has been completed. The Sourcing logistics desk will update your tracking status within 6 hours.
+                  A confirmation SMS and email have been sent to your registered coordinates.
                 </p>
               </div>
 
-              <div className="bg-[#FAF8F5] border border-[#1B3527]/5 rounded-2xl p-4 text-xs">
-                <div className="flex justify-between py-1 border-b border-[#1B3527]/5">
-                  <span className="text-[#8A968E]">Order Coordinates:</span>
+              <div className="bg-[#FAF8F5] border border-[#1B3527]/5 rounded-2xl p-4 text-xs text-left">
+                <div className="flex justify-between py-1.5 border-b border-[#1B3527]/5">
+                  <span className="text-[#8A968E]">Order ID:</span>
                   <span className="font-mono font-bold text-[#1B3527]">{orderId}</span>
                 </div>
-                <div className="flex justify-between py-1 pt-2">
-                  <span className="text-[#8A968E]">Client Phone:</span>
-                  <span className="font-medium text-[#1B3527]">{user?.phone}</span>
+                <div className="flex justify-between py-1.5 border-b border-[#1B3527]/5">
+                  <span className="text-[#8A968E]">Client:</span>
+                  <span className="font-medium text-[#1B3527]">{shippingDetails.name}</span>
+                </div>
+                <div className="flex justify-between py-1.5">
+                  <span className="text-[#8A968E]">Total Paid:</span>
+                  <span className="font-bold text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -387,7 +501,7 @@ export default function CartPage() {
                   href="/products"
                   className="bg-transparent hover:bg-[#1B3527]/5 border border-[#1B3527]/15 text-[#1B3527] font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl block transition-all cursor-pointer text-center"
                 >
-                  Return to Sourcing Archives
+                  Return to Store
                 </Link>
               </div>
             </motion.div>

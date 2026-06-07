@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Phone, ArrowRight, Loader2, Sparkles, ChevronLeft, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Phone, Mail, ArrowRight, Loader2, Sparkles, ChevronLeft, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CustomerLoginPage() {
@@ -10,7 +10,7 @@ export default function CustomerLoginPage() {
   
   // App flow states
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [otp, setOtp] = useState('');
   
   // Status states
@@ -39,10 +39,25 @@ export default function CustomerLoginPage() {
     setError('');
     setSuccess('');
     
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (phoneDigits.length < 10) {
-      setError('Please enter a valid 10-digit mobile number.');
+    const cleanInput = identifier.trim();
+    if (!cleanInput) {
+      setError('Please enter a valid mobile number or email address.');
       return;
+    }
+
+    const isEmail = cleanInput.includes('@');
+    if (isEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanInput)) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+    } else {
+      const phoneDigits = cleanInput.replace(/\D/g, '');
+      if (phoneDigits.length < 10) {
+        setError('Please enter a valid 10-digit mobile number.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -50,7 +65,7 @@ export default function CustomerLoginPage() {
       const res = await fetch('/api/customer/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phoneDigits }),
+        body: JSON.stringify({ identifier: cleanInput }),
       });
 
       const data = await res.json();
@@ -85,11 +100,11 @@ export default function CustomerLoginPage() {
 
     setLoading(true);
     try {
-      const phoneDigits = phone.replace(/\D/g, '');
+      const cleanInput = identifier.trim();
       const res = await fetch('/api/customer/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phoneDigits, otp }),
+        body: JSON.stringify({ identifier: cleanInput, otp }),
       });
 
       const data = await res.json();
@@ -172,28 +187,32 @@ export default function CustomerLoginPage() {
                 <div className="mb-6">
                   <h2 className="font-serif text-xl font-bold text-[#FAF8F5]">Sign In / Register</h2>
                   <p className="text-xs text-[#FAF8F5]/60 font-light mt-1">
-                    Enter your mobile number to receive a secure one-time verification password.
+                    Enter your mobile number or email address to receive a secure one-time verification password.
                   </p>
                 </div>
 
                 <form onSubmit={handleSendOtp} className="space-y-6">
                   <div className="space-y-2">
-                    <label htmlFor="phone" className="text-[10px] uppercase font-bold tracking-widest text-[#C5A880]">
-                      Mobile Number
+                    <label htmlFor="identifier" className="text-[10px] uppercase font-bold tracking-widest text-[#C5A880]">
+                      Mobile Number or Email
                     </label>
                     <div className="relative">
                       <input
-                        type="tel"
-                        id="phone"
-                        placeholder="e.g. 9876543210"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-[#FAF8F5]/5 text-[#FAF8F5] text-sm placeholder-[#FAF8F5]/30 pl-11 pr-4 py-3.5 rounded-xl border border-[#FAF8F5]/10 focus:outline-none focus:border-[#C5A880] focus:ring-2 focus:ring-[#C5A880]/15 transition-all duration-300 font-serif"
+                        type="text"
+                        id="identifier"
+                        placeholder="e.g. name@domain.com or 9876543210"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        className="w-full bg-[#FAF8F5]/5 text-[#FAF8F5] text-sm placeholder-[#FAF8F5]/30 pl-11 pr-4 py-3.5 rounded-xl border border-[#FAF8F5]/10 focus:outline-none focus:border-[#C5A880] focus:ring-2 focus:ring-[#C5A880]/15 transition-all duration-300 font-sans"
                         disabled={loading}
                         required
                         autoFocus
                       />
-                      <Phone className="w-4 h-4 text-[#C5A880] absolute left-4 top-1/2 -translate-y-1/2" />
+                      {identifier.includes('@') ? (
+                        <Mail className="w-4 h-4 text-[#C5A880] absolute left-4 top-1/2 -translate-y-1/2" />
+                      ) : (
+                        <Phone className="w-4 h-4 text-[#C5A880] absolute left-4 top-1/2 -translate-y-1/2" />
+                      )}
                     </div>
                   </div>
 
@@ -226,9 +245,9 @@ export default function CustomerLoginPage() {
               >
                 <div className="mb-6 flex items-start justify-between">
                   <div>
-                    <h2 className="font-serif text-xl font-bold text-[#FAF8F5]">Verify Number</h2>
+                    <h2 className="font-serif text-xl font-bold text-[#FAF8F5]">Verify Account</h2>
                     <p className="text-xs text-[#FAF8F5]/60 font-light mt-1">
-                      Verification code transmitted to <strong className="text-[#C5A880]">{phone}</strong>.
+                      Verification code transmitted to <strong className="text-[#C5A880]">{identifier}</strong>.
                     </p>
                   </div>
                   <button

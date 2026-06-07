@@ -6,26 +6,32 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kashmiri-organic-valley-secret-key
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, otp } = await req.json();
+    const body = await req.json();
+    const input = (body.identifier || body.phone || body.email || '').trim();
+    const { otp } = body;
 
-    if (!phone || !otp) {
+    if (!input || !otp) {
       return NextResponse.json(
-        { error: 'Mobile number and verification code are required.' },
+        { error: 'Mobile number/email address and verification code are required.' },
         { status: 400 }
       );
     }
 
-    const cleanPhone = phone.trim();
+    const cleanInput = input.trim();
     const cleanOtp = otp.trim();
+    const isEmail = cleanInput.includes('@');
 
-    // 1. Fetch user by phone
-    const sql = 'SELECT * FROM users WHERE phone = ? LIMIT 1';
-    const users = await executeQuery<User[]>(sql, [cleanPhone]);
+    // 1. Fetch user by email or phone
+    const sql = isEmail
+      ? 'SELECT * FROM users WHERE email = ? LIMIT 1'
+      : 'SELECT * FROM users WHERE phone = ? LIMIT 1';
+      
+    const users = await executeQuery<User[]>(sql, [isEmail ? cleanInput.toLowerCase() : cleanInput]);
     const user = users?.[0];
 
     if (!user || !user.otp || !user.otp_expiry) {
       return NextResponse.json(
-        { error: 'No verification request active for this number.' },
+        { error: 'No verification request active for this account.' },
         { status: 400 }
       );
     }
@@ -48,8 +54,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Success: Clear OTP credentials
-    const clearSql = 'UPDATE users SET otp = ?, otp_expiry = ? WHERE phone = ?';
-    await executeQuery(clearSql, [null, null, cleanPhone]);
+    const clearSql = 'UPDATE users SET otp = ?, otp_expiry = ? WHERE id = ?';
+    await executeQuery(clearSql, [null, null, user.id]);
 
     // 5. Generate Customer JWT Session
     const token = jwt.sign(

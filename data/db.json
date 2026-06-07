@@ -5,63 +5,63 @@
       "name": "Admin Kashmiri Organic",
       "email": "admin@kashmiriorganic.com",
       "password_hash": "$2a$10$tMhP4p07n6z9YgK/YvKgeOSN.CymcWdM82oK5T5B/iB4lFskG64U.",
-      "role": "admin",
-      "created_at": "2026-05-29T20:20:24.000Z"
+      "role": "super_admin",
+      "created_at": "2026-06-06T18:21:23.386Z",
+      "phone": null,
+      "otp": null,
+      "otp_expiry": null
     },
     {
       "id": 2,
-      "name": "Pralhad Sharma",
-      "email": "pralhad@kashmiriorganic.com",
-      "password_hash": "",
-      "phone": "919988776655",
-      "otp": null,
-      "otp_expiry": null,
-      "role": "customer",
-      "created_at": "2026-06-06T02:25:06.672Z"
-    },
-    {
-      "id": 3,
-      "name": "",
-      "email": "",
-      "password_hash": "",
-      "phone": "1234567890",
-      "otp": null,
-      "otp_expiry": null,
-      "role": "customer",
-      "created_at": "2026-06-06T02:42:13.855Z"
-    },
-    {
-      "id": 4,
-      "name": "",
-      "email": "",
-      "password_hash": "",
-      "phone": "+91 9988776655",
-      "otp": null,
-      "otp_expiry": null,
-      "role": "customer",
-      "created_at": "2026-06-06T03:13:47.664Z"
-    },
-    {
-      "id": 5,
-      "name": "",
-      "email": "",
+      "name": "kishan",
+      "email": "sjodme@gmail.com",
       "password_hash": "",
       "phone": "9876543210",
       "otp": null,
       "otp_expiry": null,
       "role": "customer",
-      "created_at": "2026-06-06T03:36:23.534Z"
+      "created_at": "2026-06-06T18:38:04.093Z",
+      "address": "sdflkdnfkldm;kfmamklmdsfsf",
+      "city": "vasai",
+      "pinCode": "3000020222",
+      "country": "India"
     },
     {
-      "id": 6,
-      "name": "",
-      "email": "",
+      "id": 3,
+      "name": "kishan",
+      "email": "shindekishan937@gmail.com",
       "password_hash": "",
-      "phone": "9876543456",
+      "phone": "9326810212",
       "otp": null,
       "otp_expiry": null,
       "role": "customer",
-      "created_at": "2026-06-06T03:57:49.393Z"
+      "created_at": "2026-06-06T18:50:44.436Z",
+      "address": "A-201 ashoka complex",
+      "city": "mumbai",
+      "pinCode": "401202",
+      "country": "India"
+    },
+    {
+      "id": 4,
+      "name": "kishanshinde112",
+      "email": "shindekishan9372@gmail.com",
+      "password_hash": "$2b$10$R8SzAPVASFZ0DBvtJlUUguyCM7A8.X/X3cC.7SzmgHGwEh2C.pue6",
+      "role": "admin",
+      "created_at": "2026-06-06T19:00:20.651Z",
+      "phone": null,
+      "otp": null,
+      "otp_expiry": null
+    },
+    {
+      "id": 5,
+      "name": "Valley Staff",
+      "email": "staff@valley.org",
+      "password_hash": "$2b$10$yADEjRsn8q4N.yBiGg68wOtBYwDlWGuu0hZFptrLcdyjOCSNzoxHy",
+      "role": "admin",
+      "created_at": "2026-06-06T19:38:34.464Z",
+      "phone": null,
+      "otp": null,
+      "otp_expiry": null
     }
   ],
   "categories": [
@@ -99,6 +99,13 @@
       "slug": "wellness",
       "description": "Aromatic therapeutic oils and traditional herbal wellness blends.",
       "image_url": "/images/categories/wellness.jpg"
+    },
+    {
+      "id": 6,
+      "name": "Gourmet Foods",
+      "slug": "gourmet-foods",
+      "description": "Premium organic spices, honey, and traditional Kashmiri food products.",
+      "image_url": "https://images.unsplash.com/photo-1606787366850-de6330128bfc"
     }
   ],
   "product_types": [
@@ -131,7 +138,7 @@
   "materials": [
     {
       "id": 1,
-      "name": "Saffron Threads",
+      "name": "Saffron",
       "slug": "saffron",
       "overview": "Kashmiri Saffron (Lacha or Mongra) is globally celebrated for its dark crimson strands, strong aroma, and unmatched medical values. Grown in the fields of Pampore, it is the most premium saffron in the world.",
       "origin": "Pampore Saffron Fields, Kashmir Valley (Altitude: 1,600m)",
@@ -139,9 +146,8 @@
       "sustainability": "100% dry-farmed using traditional heritage methods passed down through generations. No chemicals or synthetic boosters are used.",
       "benefits": "Powerful antioxidant, enhances skin glow and complexion, boosts mood and memory, supports cardiovascular health and acts as an organic immunity booster.",
       "image_url": "/images/materials/saffron.jpg",
-      "extraction_story": "Under the crisp autumn sky, Pampore's plateaus bloom into a sea of purple crocus blossoms. The harvest begins at the break of dawn, before the morning sun can wither the delicate stigmas. Gatherers walk slowly through the purple fields, hand-picking each blossom with reverent care. Later in the village homes, under soft lights, families gather to separate the precious crimson threads from the petals. It takes over 75,000 hand-picked blossoms to yield just one single pound of Mongra saffron. These threads are then carefully shade-dried over heated charcoal beds, locking in the natural crocin and rich honeyed aroma. Tested and Verified.",
-      "history": "",
-      "gallery_urls": "[]"
+      "history": "Saffron cultivation has been recorded in Pampore since the 5th century BC, introduced by Central Asian traders and celebrated in ancient Ayurvedic scripts. Pampore is globally renowned as the \"Saffron Town of Kashmir\" due to its rich, high-grade soil chemistry.",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1515150144380-bca9f1650ed9?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80\"]"
     },
     {
       "id": 2,
@@ -153,7 +159,8 @@
       "sustainability": "Bee-friendly and cruelty-free honey harvesting. Bees are nurtured naturally in organic hives, maintaining local agricultural biodiversity.",
       "benefits": "Natural prebiotic, rapid energy source, organic cough suppressant, excellent wound healer, and premium sugar substitute rich in wild floral trace minerals.",
       "image_url": "/images/materials/honey.jpg",
-      "extraction_story": "Deep in the remote pine and acacia forests of Kupwara, wild mountain bees build their hives on towering cliffside branches and ancient trees. Sourced during late spring when the acacia flowers are in full bloom, our local gatherers hike into the wilderness using traditional smoke-calming methods to retrieve the golden combs. The honey is extracted using simple, cold-gravity press methods, avoiding any heating or micro-filtering. This raw, unpasteurized process ensures every jar retains the natural forest pollen, wild active enzymes, and floral fragrance of the Himalayan highlands."
+      "history": "Nomadic beekeeping in the high valleys of Kashmir has been recorded in ancient Sanskrit and Persian courtly texts as a royal delicacy. Beekeepers migrate through floral belts according to seasonal blooms.",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1606744824163-985d376605aa?auto=format&fit=crop&w=600&q=80\"]"
     },
     {
       "id": 3,
@@ -165,7 +172,8 @@
       "sustainability": "Felled strictly from dead or licensed senior walnut trees. We actively replant three walnut saplings for every tree utilized.",
       "benefits": "Food-safe natural coating, generation-lasting durability, beautiful organic centerpiece decor, biodegradable kitchenware, and support for rural woodcraft guilds.",
       "image_url": "/images/materials/wood.jpg",
-      "extraction_story": "In the high-altitude forests of Kashmir, master woodcarvers select walnut logs from licensed, mature trees that have naturally fallen or reached the end of their lifecycle. These logs are seasoned in shaded outdoor vaults for two to five years, allowing the wood's moisture content to settle naturally and prevent future warping. Once fully cured, master artisans carve the seasoned walnut blocks by hand using iron chisels, shaping them into elegant organic bowls, panels, and utensils. Each piece is hand-rubbed with pure apricot kernel oil, enhancing the rich, dark swirling grains of the walnut heartwood."
+      "history": "Hand-carved walnut woodcrafts enjoyed extensive royal patronage during the Mughal Empire, forming the architectural and interior highlights of houseboats and imperial palaces throughout Srinagar.",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1546482502-61d0092288d6?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80\"]"
     },
     {
       "id": 4,
@@ -177,7 +185,8 @@
       "sustainability": "Grown under rainfed conditions with zero artificial fertilizer or pesticide use. Preserving traditional orchard ecosystems.",
       "benefits": "Excellent source of Omega-3 (ALA) fatty acids, boosts cognitive performance, lowers LDL cholesterol, and maintains perfect skin elasticity and hair health.",
       "image_url": "/images/materials/walnut.jpg",
-      "extraction_story": "During the harvest weeks of late September, walnut orchards across the Jhelum valley become lively with families gathering the fallen green-husked nuts. The walnuts are hand-sorted, and their outer shells are cracked to retrieve the rich kernels. To produce our signature walnut oil, the raw kernels are cold-pressed in traditional wooden mills ('kohlu') at slow speeds. This cold-press extraction generates zero heat, preserving the high-quality fatty acids, vitamin E, and earthy, buttery flavor profile of the high-altitude Kashmiri walnut."
+      "history": "Historically, walnut orchards bordered the high Silk Road mountain passes. Kashmiri walnuts were historically traded with East Asian and Persian merchants as a premium energy-rich commodity.",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1589947966779-7a0e5b7b9ab8?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80\"]"
     },
     {
       "id": 5,
@@ -189,33 +198,22 @@
       "sustainability": "Ethical wildcrafting principles followed. We harvest less than 20% of wild herb clusters to ensure zero disruption to alpine ecosystems.",
       "benefits": "Powerful adaptogens, deep respiratory relief, profound relaxation, soothing inflammation, and excellent base for luxury botanical skincare solutions.",
       "image_url": "/images/materials/herbs.jpg",
-      "extraction_story": "High above the tree lines in the pristine alpine meadows of Gulmarg and Sonamarg, wild mountain herbs like Dandelion, Nettle, and Thyme grow in mineral-rich glacial soils. Local gatherers, who possess ancestral botanical knowledge, harvest these wild herbs sustainably by hand, taking care to leave the root systems intact for future seasons. The herbs are packed in cotton bags and dried in clean mountain shade, preserving their potent active compounds and therapeutic qualities."
+      "history": "The high alpine meadows of Sonamarg and Gulmarg are celebrated in classical Unani and Ayurvedic traditions. They have provided rare medicinal plants for tribal healers across the Himalayas for eons.",
+      "gallery_urls": "[\"https://images.unsplash.com/photo-1515150144380-bca9f1650ed9?auto=format&fit=crop&w=600&q=80\",\"https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80\"]"
     },
     {
       "id": 6,
-      "name": "Royal Pahalgam Lavender",
-      "slug": "royal-pahalgam-lavender",
-      "overview": "",
-      "origin": "Pahalgam Highlands, Kashmir",
-      "manufacturing_process": "",
-      "sustainability": "",
-      "benefits": "",
-      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80",
-      "extraction_story": "At the foothills of Pahalgam, fields of premium lavender bloom into deep violet waves every July. Sourced at peak bloom when the essential oil concentration is highest, the flower heads are hand-cut by local farming cooperatives. Within hours of harvesting, the fresh lavender is steam-distilled in traditional copper alembics using pure mountain spring water. The steam gently coaxes the lavender essential oil from the flower petals, which condenses into a highly pure, sweet, herbaceous elixir valued for its calming and restorative properties."
-    },
-    {
-      "id": 7,
-      "name": "Laptop",
-      "slug": "laptop",
-      "overview": "cxz",
-      "origin": "Pahalgam Highlands, Kashmir",
-      "manufacturing_process": "dsfdgfg",
-      "sustainability": "xzcdcfdv",
-      "benefits": "dvfasfsd",
-      "image_url": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80",
-      "history": "vzdfdfsd",
+      "name": "Almondskk",
+      "slug": "almonds",
+      "overview": "sajnsjbdjhbjkbdjksbjjxnsjknhskdsnjkasnas",
+      "origin": "Kashmiri Valley Orchards",
+      "manufacturing_process": "jhkdbjcdbsjhdsbddjsjoasjdas",
+      "sustainability": "Sourced from local growers practicing traditional water-saving farming methods.",
+      "benefits": "sdjknsjbdjknklasdjkadjoasdjkasdjnlxmlxd",
+      "image_url": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37",
+      "history": "dndasjbdjhkabjkndkjda hbsxdvasgdgasidasjanmbasjcdnlasndal",
       "gallery_urls": "[]",
-      "extraction_story": "dfssda"
+      "extraction_story": "dddsjbdyugkfuehfuhnebrkauugywegdfdkjiod6fdbhddfuhfysfdhfjkdffhhfikhgfinjeed"
     }
   ],
   "benefits": [
@@ -243,6 +241,11 @@
       "id": 5,
       "name": "Clean Energy",
       "description": "Provides sustained physical power and metabolism support without crashes."
+    },
+    {
+      "id": 6,
+      "name": "Digestive Health",
+      "description": "Soothes digestion, reduces bloating, and improves gut microbiome balance."
     }
   ],
   "usage_types": [
@@ -265,6 +268,11 @@
       "id": 4,
       "name": "Fitness",
       "description": "High-performance nutrition for pre/post workouts and weight management."
+    },
+    {
+      "id": 5,
+      "name": "Culinary Spices",
+      "description": "Ideal for culinary enhancement, flavoring premium gourmet meals, and traditional recipes."
     }
   ],
   "products": [
@@ -275,13 +283,14 @@
       "short_description": "The world's finest saffron, hand-harvested from Pampore, boasting the highest crocin concentration and deep red stigma.",
       "long_description": "Our Grade A+ Kashmiri Mongra Saffron represents the absolute pinnacle of luxury spices. Harvested in the scenic Pampore valleys, it is highly distinct for its dark crimson red strands with no yellow waste styled parts. Rich in bioactive compounds like Crocin, Safranal, and Picrocrocin, this saffron is renowned globally for its intense aroma, coloring strength, and powerful therapeutic qualities. Every single strand is delicately plucked by hand and shade-dried to preserve its high oil content. Ideal for direct consumption, luxury cuisine, herbal milk, and organic face treatments.",
       "image_url": "/images/products/saffron.jpg",
+      "gallery_urls": "[\"/images/products/saffron.jpg\",\"/images/products/saffron-2.jpg\",\"/images/products/saffron-box.jpg\"]",
       "availability": "retail,bulk,export",
       "certified": 1,
       "export_quality": 1,
       "moq": "50 grams (Retail) / 1kg (Export)",
       "packaging": "Premium moisture-resistant glass jars with gold-embossed velvet boxes.",
       "shipping": "Worldwide air shipping available. Certified with phytosanitary documentation.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.387Z",
       "price": 350,
       "discount_price": 299,
       "sku": "KO-SAF-001",
@@ -303,7 +312,7 @@
       "moq": "100 jars (Retail) / 500kg (Bulk Export)",
       "packaging": "Food-grade glass jars with cork lids and rustic jute neck wrap.",
       "shipping": "Secured vacuum sealed pallets for international sea and air shipping.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.387Z",
       "price": 999,
       "discount_price": 899,
       "sku": "KO-HON-001",
@@ -325,7 +334,7 @@
       "moq": "10 pieces",
       "packaging": "Custom felt-lined wooden crates with heavy eco-friendly cardboard layers.",
       "shipping": "Safe air/sea freight shipping with certified termite-fumigation certificate.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.387Z",
       "price": 3499,
       "discount_price": 2999,
       "sku": "KO-WD-001",
@@ -347,7 +356,7 @@
       "moq": "50 litres (Bulk) / 200 bottles (Retail)",
       "packaging": "Amber glass dropper bottles with gold seals / HDPE bulk food containers.",
       "shipping": "Leak-proof thermal-insulated transport packaging.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 1299,
       "discount_price": 1199,
       "sku": "KO-OIL-001",
@@ -369,7 +378,7 @@
       "moq": "100 bottles / 10 Litres (Bulk)",
       "packaging": "UV-blocking cobalt blue glass bottles with child-safety tamper drop seals.",
       "shipping": "Safe air transport certified under IATA hazardous liquid classifications.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 1499,
       "discount_price": 1399,
       "sku": "KO-LAV-001",
@@ -391,7 +400,7 @@
       "moq": "50 bars",
       "packaging": "Individually wrapped in recycled handmade paper box with gold-foil seal.",
       "shipping": "Standard ground and air transit.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 399,
       "discount_price": 349,
       "sku": "KO-SOP-001",
@@ -413,7 +422,7 @@
       "moq": "50 jars",
       "packaging": "Hexagonal glass jars with gold lids and hand-tied tag locks.",
       "shipping": "Thermal protected container crates.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 1499,
       "discount_price": 1299,
       "sku": "KO-HON-002",
@@ -435,7 +444,7 @@
       "moq": "20 sets",
       "packaging": "Wrapped in muslin cloth inside a heavy recycled craft paper tube.",
       "shipping": "Safe custom carton pallets.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 1899,
       "discount_price": 1699,
       "sku": "KO-WD-002",
@@ -457,7 +466,7 @@
       "moq": "500 grams",
       "packaging": "Vacuum-sealed air-tight ambient packages within premium wooden gift boxes.",
       "shipping": "Direct air courier to preserve product dryness.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 9999,
       "discount_price": 8999,
       "sku": "KO-MUSH-001",
@@ -479,16 +488,46 @@
       "moq": "100 bottles",
       "packaging": "Tamper-resistant gold dropper bottle inside a velvet-lined case.",
       "shipping": "Secure padded parcels for international safety.",
-      "created_at": "2026-05-29T20:20:24.000Z",
+      "created_at": "2026-06-06T18:21:23.388Z",
       "price": 2499,
       "discount_price": 2199,
       "sku": "KO-SER-001",
       "stock": 55,
       "sub_category": "Skincare Essentials",
       "season": "autumn"
+    },
+    {
+      "id": 11,
+      "name": "Organic Saffron Tea",
+      "slug": "organic-saffron-tea",
+      "short_description": "Infused with organic Pampore Mongra Saffron.",
+      "long_description": "A hand-crafted blend of high-grown green tea and premium Kashmiri Mongra saffron threads. Rich in antioxidants.",
+      "image_url": "https://images.unsplash.com/photo-1544787219-7f47ccb76574",
+      "gallery_urls": "[]",
+      "price": 150,
+      "discount_price": null,
+      "sku": "KO-TEA-001",
+      "stock": 200,
+      "moq": "100 boxes",
+      "packaging": "Ambient-sealed vacuum containers",
+      "shipping": "Air freight direct (10-12 days)",
+      "availability": "retail,bulk,export",
+      "certified": 1,
+      "export_quality": 0,
+      "sub_category": "Premium Tea",
+      "season": "all",
+      "created_at": "2026-06-06T20:02:27.170Z"
     }
   ],
   "product_categories": [
+    {
+      "product_id": 1,
+      "category_id": 1
+    },
+    {
+      "product_id": 1,
+      "category_id": 2
+    },
     {
       "product_id": 2,
       "category_id": 1
@@ -558,11 +597,7 @@
       "category_id": 5
     },
     {
-      "product_id": 1,
-      "category_id": 1
-    },
-    {
-      "product_id": 1,
+      "product_id": 11,
       "category_id": 2
     }
   ],
@@ -614,6 +649,10 @@
   ],
   "product_materials": [
     {
+      "product_id": 1,
+      "material_id": 1
+    },
+    {
       "product_id": 2,
       "material_id": 2
     },
@@ -662,15 +701,19 @@
       "material_id": 5
     },
     {
-      "product_id": 1,
-      "material_id": 1
-    },
-    {
-      "product_id": 1,
-      "material_id": 6
+      "product_id": 11,
+      "material_id": 2
     }
   ],
   "product_benefits": [
+    {
+      "product_id": 1,
+      "benefit_id": 1
+    },
+    {
+      "product_id": 1,
+      "benefit_id": 2
+    },
     {
       "product_id": 2,
       "benefit_id": 1
@@ -720,22 +763,29 @@
       "benefit_id": 4
     },
     {
-      "product_id": 1,
+      "product_id": 11,
       "benefit_id": 1,
-      "custom_description": "Strengthens natural body defenses against seasonal infections."
+      "custom_description": ""
     },
     {
-      "product_id": 1,
+      "product_id": 11,
       "benefit_id": 2,
-      "custom_description": "Improves skin complexion, reduces pigmentation, and adds natural radiance."
-    },
-    {
-      "product_id": 1,
-      "benefit_id": 4,
       "custom_description": ""
     }
   ],
   "product_usage_types": [
+    {
+      "product_id": 1,
+      "usage_type_id": 1
+    },
+    {
+      "product_id": 1,
+      "usage_type_id": 2
+    },
+    {
+      "product_id": 1,
+      "usage_type_id": 3
+    },
     {
       "product_id": 2,
       "usage_type_id": 1
@@ -789,19 +839,9 @@
       "usage_type_id": 3
     },
     {
-      "product_id": 1,
+      "product_id": 11,
       "usage_type_id": 1,
-      "custom_description": "Designed for safe, continuous everyday usage in food or lifestyle."
-    },
-    {
-      "product_id": 1,
-      "usage_type_id": 2,
-      "custom_description": "Concentrated natural remedies for healing, soothing, and physical therapy."
-    },
-    {
-      "product_id": 1,
-      "usage_type_id": 3,
-      "custom_description": "Luxury cosmetic and skin-nourishment applications."
+      "custom_description": ""
     }
   ],
   "product_related": [
@@ -874,68 +914,58 @@
       "seo_description": "An inside look at the historical art of walnut wood carving in Kashmir, the seasoning process, and the ethical forestry practices supporting our local artisans.",
       "related_products": "[3,4]",
       "related_materials": "[3,4]"
+    },
+    {
+      "id": 3,
+      "title": "Saffron Harvesting Chronicles",
+      "slug": "saffron-harvesting-chronicles",
+      "content": "Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.Learn about how our premium Mongra saffron is harvested by local artisans in the Pampore region of Kashmir. We ensure fair-trade practices and organic standards.",
+      "featured_image": "https://images.unsplash.com/photo-1508747703725-719ae2c98295?auto=format&fit=crop&w=1200&q=80",
+      "category": "Organic Living",
+      "tags": "harvest, saffron, pampore",
+      "author": "kishan",
+      "status": "published",
+      "seo_description": "[dfukhksdhlhs,sdhfiodhkjsdkjad]",
+      "related_products": "[1,5]",
+      "related_materials": "[2,1,6]"
     }
   ],
   "inquiries": [
     {
       "id": 1,
       "name": "kishan shinde",
-      "email": "admin@freshcart.com",
-      "phone": "+917303955134",
-      "company_name": "sdddsf",
-      "inquiry_type": "contact",
-      "message": "asdsdnsjd dksdbndj",
-      "product_id": 4,
-      "status": "reviewed",
-      "created_at": "2026-05-30T01:46:15.542Z"
+      "email": "shindekishan937@gmail.com",
+      "phone": "+919326810212",
+      "company_name": "",
+      "inquiry_type": "bulk",
+      "message": "hkaweyhgdvshdjsdhncsdjckldckldnmjk",
+      "product_id": 2,
+      "status": "new",
+      "created_at": "2026-06-06T18:57:56.609Z"
     },
     {
       "id": 2,
-      "name": "Client 9876543210",
-      "email": "customer@kashmiriorganic.com",
-      "phone": "9876543210",
-      "company_name": "Direct Checkout",
-      "inquiry_type": "order",
-      "message": "Order checkout coordinates summary:\n- Kashmiri Mongra Saffron (Grade A+) (Qty: 1) - ₹299\n\nSubtotal: ₹299\nPackaging/Dispatch: ₹350\nTotal Sourcing Cost: ₹649",
-      "product_id": 1,
-      "status": "reviewed",
-      "created_at": "2026-06-06T03:38:07.666Z"
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "+1 234-567-8901",
+      "company_name": "Doe Logistics",
+      "inquiry_type": "quote",
+      "message": "We want to source 500kg of Mongra saffron. Looking for phytosanitary certification.",
+      "product_id": null,
+      "status": "new",
+      "created_at": "2026-06-06T19:27:58.152Z"
     },
     {
       "id": 3,
-      "name": "Client 9876543210",
-      "email": "customer@kashmiriorganic.com",
-      "phone": "9876543210",
-      "company_name": "Direct Checkout",
-      "inquiry_type": "order",
-      "message": "Order checkout coordinates summary:\n- Organic Himalayan Acacia Honey (Qty: 1) - ₹899\n\nSubtotal: ₹899\nPackaging/Dispatch: ₹350\nTotal Sourcing Cost: ₹1,249",
-      "product_id": 2,
-      "status": "replied",
-      "created_at": "2026-06-06T03:41:37.043Z"
-    },
-    {
-      "id": 4,
-      "name": "Client 9876543456",
-      "email": "customer@kashmiriorganic.com",
-      "phone": "9876543456",
-      "company_name": "Direct Checkout",
-      "inquiry_type": "order",
-      "message": "Order checkout coordinates summary:\n- Kashmiri Mongra Saffron (Grade A+) (Qty: 3) - ₹897\n- Cold-Pressed Wild Walnut Kernel Oil (Qty: 3) - ₹3,597\n- Heritage Carved Walnut Wood Fruit Bowl (Qty: 3) - ₹8,997\n\nSubtotal: ₹13,491\nPackaging/Dispatch: ₹350\nTotal Sourcing Cost: ₹13,841",
+      "name": "Sarah Jenkins",
+      "email": "sarah@kashmiridelights.com",
+      "phone": "+1 (555) 019-2834",
+      "company_name": "Kashmiri Delights LLC",
+      "inquiry_type": "quote",
+      "message": "Looking to import high-quality organic saffron in bulk for packaging. Requesting certification docs.",
       "product_id": 1,
-      "status": "reviewed",
-      "created_at": "2026-06-06T03:59:06.631Z"
-    },
-    {
-      "id": 5,
-      "name": "Client 9876543210",
-      "email": "customer@kashmiriorganic.com",
-      "phone": "9876543210",
-      "company_name": "Direct Checkout",
-      "inquiry_type": "order",
-      "message": "Order checkout coordinates summary:\n- Wild Lavender Therapeutic Essential Oil (Qty: 1) - ₹1,399\n- Heritage Carved Walnut Wood Fruit Bowl (Qty: 1) - ₹2,999\n- Cold-Pressed Wild Walnut Kernel Oil (Qty: 1) - ₹1,199\n- Kashmiri Mongra Saffron (Grade A+) (Qty: 3) - ₹897\n\nSubtotal: ₹6,494\nPackaging/Dispatch: ₹350\nTotal Sourcing Cost: ₹6,844",
-      "product_id": 5,
       "status": "new",
-      "created_at": "2026-06-06T04:34:54.625Z"
+      "created_at": "2026-06-06T20:38:33.165Z"
     }
   ],
   "testimonials": [
@@ -1030,6 +1060,154 @@
       "id": 6,
       "setting_key": "instagram_url",
       "setting_value": "https://instagram.com/kashmiriorganic"
+    }
+  ],
+  "orders": [
+    {
+      "id": "KO-ORD-2026-9872",
+      "user_phone": "9876543210",
+      "user_name": "kishan",
+      "user_email": "sjodme@gmail.com",
+      "items": "[{\"id\":2,\"name\":\"Organic Himalayan Acacia Honey\",\"slug\":\"organic-himalayan-acacia-honey\",\"price\":899,\"quantity\":4,\"image_url\":\"/images/products/honey.jpg\"}]",
+      "total_amount": 3946,
+      "status": "delivered",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"sjodme@gmail.com\",\"address\":\"sdflkdnfkldm;kfmamklmdsfsf\",\"pinCode\":\"3000020222\",\"city\":\"vasai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-07T03:04:09.407Z"
+    },
+    {
+      "id": "KO-ORD-2026-7357",
+      "user_phone": "9876543210",
+      "user_name": "kishan",
+      "user_email": "sjodme@gmail.com",
+      "items": "[{\"id\":2,\"name\":\"Organic Himalayan Acacia Honey\",\"slug\":\"organic-himalayan-acacia-honey\",\"price\":899,\"quantity\":3,\"image_url\":\"/images/products/honey.jpg\"}]",
+      "total_amount": 3047,
+      "status": "shipped",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"sjodme@gmail.com\",\"address\":\"sdflkdnfkldm;kfmamklmdsfsf\",\"pinCode\":\"3000020222\",\"city\":\"vasai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-07T03:02:37.339Z"
+    },
+    {
+      "id": "KO-ORD-2026-4467",
+      "user_phone": "9326810212",
+      "user_name": "kishan",
+      "user_email": "shindekishan937@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"slug\":\"kashmiri-mongra-saffron-grade-a\",\"price\":299,\"quantity\":5,\"image_url\":\"/images/products/saffron.jpg\"}]",
+      "total_amount": 1845,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"shindekishan937@gmail.com\",\"address\":\"A-201 ashoka complex\",\"pinCode\":\"401202\",\"city\":\"mumbai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-06T18:55:51.638Z"
+    },
+    {
+      "id": "KO-ORD-2026-1994",
+      "user_phone": "9326810212",
+      "user_name": "kishan",
+      "user_email": "shindekishan937@gmail.com",
+      "items": "[{\"id\":2,\"name\":\"Organic Himalayan Acacia Honey\",\"slug\":\"organic-himalayan-acacia-honey\",\"price\":899,\"quantity\":3,\"image_url\":\"/images/products/honey.jpg\"}]",
+      "total_amount": 3047,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"shindekishan937@gmail.com\",\"address\":\"A-201 ashoka complex\",\"pinCode\":\"401202\",\"city\":\"mumbai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-06T18:51:24.311Z"
+    },
+    {
+      "id": "KO-ORD-2026-7512",
+      "user_phone": "9876543456",
+      "user_name": "kishan shinde",
+      "user_email": "shindekishan937@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"slug\":\"kashmiri-mongra-saffron-grade-a\",\"price\":299,\"quantity\":1,\"image_url\":\"/images/products/saffron.jpg\"}]",
+      "total_amount": 649,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan shinde\",\"email\":\"shindekishan937@gmail.com\",\"address\":\"A-201 ashoka complex\",\"pinCode\":\"401202\",\"city\":\"mumbai\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-06T18:50:25.145Z"
+    },
+    {
+      "id": "KO-ORD-2026-1331",
+      "user_phone": "9876543210",
+      "user_name": "John Doe",
+      "user_email": "",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"slug\":\"kashmiri-mongra-saffron-grade-a\",\"price\":299,\"quantity\":1,\"image_url\":\"/images/products/saffron.jpg\"}]",
+      "total_amount": 649,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"John Doe\",\"address\":\"123 Main St\",\"pinCode\":\"110001\",\"city\":\"Delhi\",\"country\":\"India\"}",
+      "payment_method": "Credit Card / UPI",
+      "created_at": "2026-06-06T18:41:14.671Z"
+    }
+  ],
+  "admin_activities": [
+    {
+      "id": 1780801466269,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-9872 to delivered",
+      "created_at": "2026-06-07T03:04:26.269Z"
+    },
+    {
+      "id": 1780801411270,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-7357 to shipped",
+      "created_at": "2026-06-07T03:03:31.270Z"
+    },
+    {
+      "id": 1780801392727,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-7357 to processing",
+      "created_at": "2026-06-07T03:03:12.727Z"
+    },
+    {
+      "id": 1780801180912,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-4467 to paid",
+      "created_at": "2026-06-07T02:59:40.912Z"
+    },
+    {
+      "id": 1780801178536,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-4467 to delivered",
+      "created_at": "2026-06-07T02:59:38.536Z"
+    },
+    {
+      "id": 1780801175021,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-4467 to paid",
+      "created_at": "2026-06-07T02:59:35.021Z"
+    },
+    {
+      "id": 1780801172334,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-4467 to processing",
+      "created_at": "2026-06-07T02:59:32.334Z"
+    },
+    {
+      "id": 1780774714464,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "CREATE_ADMIN",
+      "details": "Created new admin: Valley Staff (staff@valley.org)",
+      "created_at": "2026-06-06T19:38:34.464Z"
+    },
+    {
+      "id": 1780772420651,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "CREATE_ADMIN",
+      "details": "Created new admin: kishanshinde112 (shindekishan9372@gmail.com)",
+      "created_at": "2026-06-06T19:00:20.651Z"
     }
   ]
 }

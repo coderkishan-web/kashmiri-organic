@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
+import { executeQuery, User } from '@/lib/db';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'kashmiri-organic-valley-secret-key-2026';
 
 export async function GET(req: NextRequest) {
@@ -13,14 +15,27 @@ export async function GET(req: NextRequest) {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
+      
+      const sql = 'SELECT * FROM users WHERE id = ? LIMIT 1';
+      const users = await executeQuery<User[]>(sql, [decoded.id]);
+      const user = users?.[0];
+
+      if (!user) {
+         return NextResponse.json({ authenticated: false, error: 'User not found.' }, { status: 404 });
+      }
+
       return NextResponse.json({
         authenticated: true,
         user: {
-          id: decoded.id,
-          phone: decoded.phone,
-          name: decoded.name,
-          email: decoded.email,
-          role: decoded.role,
+          id: user.id,
+          phone: user.phone,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          address: user.address,
+          city: user.city,
+          pinCode: user.pinCode,
+          country: user.country || 'India'
         },
       });
     } catch (err) {

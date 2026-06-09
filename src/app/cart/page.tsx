@@ -16,6 +16,7 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [paymentMode, setPaymentMode] = useState<'mock' | 'stripe'>('mock');
   
   // Checkout process states
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'payment' | 'success'>('cart');
@@ -37,9 +38,18 @@ export default function CartPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponError, setCouponError] = useState('');
   const [isApplying, setIsApplying] = useState(false);
+  const [cartError, setCartError] = useState('');
 
   // 1. Load cart and verify session on mount
   useEffect(() => {
+    // Read query parameters safely on the client
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'payment_cancelled') {
+        setCartError('Your checkout session was cancelled. You can review your cart and try again.');
+      }
+    }
+
     // Load Cart
     try {
       const saved = localStorage.getItem('kashmiri_organic_cart');
@@ -54,6 +64,9 @@ export default function CartPage() {
     fetch('/api/customer/auth/me')
       .then((res) => res.json())
       .then((data) => {
+        if (data?.paymentMode) {
+          setPaymentMode(data.paymentMode);
+        }
         if (data?.authenticated) {
           setUser(data.user);
           setShippingDetails(prev => ({ 
@@ -184,41 +197,56 @@ export default function CartPage() {
 
   const proceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    setCheckoutStep('payment');
+    if (paymentMode === 'stripe') {
+      handlePlaceOrder();
+    } else {
+      setCheckoutStep('payment');
+    }
   };
 
   const handlePlaceOrder = async () => {
     setPlacingOrder(true);
-    
-    // Simulate payment gateway delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     try {
-      const res = await fetch('/api/customer/orders', {
+      // Send only item IDs and quantities — server re-validates all prices from the DB
+      const checkoutItems = cartItems.map((item: any) => ({
+        id: item.id,
+        quantity: item.quantity,
+      }));
+
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cartItems,
-          total_amount: total,
-          shipping_address: shippingDetails,
-          payment_method: 'Credit Card / UPI',
-          user: user,
+          items: checkoutItems,
+          shippingDetails,
           coupon_code: appliedCoupon ? appliedCoupon.code : null,
-          discount_amount: discount
+          discount_amount: discount,
         }),
       });
 
       const data = await res.json();
 
-      if (res.ok) {
+      if (!res.ok) {
+        alert(data.error || 'Failed to submit order. Please try again.');
+        return;
+      }
+
+      // PAYMENT_MODE=stripe → redirect to Stripe Checkout
+      if (data.url) {
+        saveCart([]); // Clear cart before redirect so it's empty on return
+        window.location.href = data.url;
+        return;
+      }
+
+      // PAYMENT_MODE=mock → order already paid, show inline success
+      if (data.success && data.order) {
         setOrderId(data.order.id);
         setCheckoutStep('success');
-        saveCart([]); // Clear cart
-      } else {
-        alert(data.error || 'Failed to submit order.');
+        saveCart([]);
       }
     } catch (err) {
-      alert('Communication error placing order.');
+      alert('A network error occurred. Please check your connection and try again.');
     } finally {
       setPlacingOrder(false);
     }
@@ -241,6 +269,14 @@ export default function CartPage() {
       <div className="absolute bottom-0 left-0 w-[45vw] h-[45vw] rounded-full bg-[#C5A880]/4 blur-[130px] pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative z-10">
+        {cartError && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200/60 text-amber-800 text-xs rounded-2xl flex items-center justify-between shadow-sm">
+            <span>{cartError}</span>
+            <button onClick={() => setCartError('')} className="text-amber-700 hover:text-amber-900 font-bold uppercase tracking-wider text-[10px] ml-4 cursor-pointer">
+              Dismiss
+            </button>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           
           {/* STEP 1: CART */}
@@ -510,10 +546,20 @@ export default function CartPage() {
                   <div className="pt-4 mt-6 border-t border-[#1B3527]/10">
                     <button
                       type="submit"
-                      className="w-full bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] font-bold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all active:scale-[0.97]"
+                      disabled={placingOrder}
+                      className="w-full bg-[#1B3527] hover:bg-[#C5A880] text-[#FAF8F5] hover:text-[#1B3527] font-bold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <span>Proceed to Payment</span>
-                      <ArrowRight className="w-4 h-4" />
+                      {placingOrder ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-[#C5A880]" />
+                          <span>Generating Secure Checkout...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Proceed to Payment</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

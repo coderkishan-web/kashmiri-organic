@@ -13,6 +13,8 @@ export interface User {
   phone?: string | null;
   otp?: string | null;
   otp_expiry?: string | null;
+  otp_attempts?: number | null;
+  last_otp_request_at?: string | null;
   address?: string | null;
   city?: string | null;
   pinCode?: string | null;
@@ -134,6 +136,11 @@ export interface Order {
   shipping_address: string; // JSON string of { name, address, pin_code, city, country }
   payment_method: string;
   created_at: string;
+  stripe_session_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+  payment_confirmed_at?: string | null;
+  coupon_code?: string | null;
+  discount_amount?: number;
 }
 
 export interface AdminActivity {
@@ -241,7 +248,9 @@ const SEED_DATA: LocalDBState = {
       created_at: new Date().toISOString(),
       phone: null,
       otp: null,
-      otp_expiry: null
+      otp_expiry: null,
+      otp_attempts: 0,
+      last_otp_request_at: null
     }
   ],
   categories: [
@@ -1052,9 +1061,39 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         return [];
       }
 
+      // WHERE id IN (...) — used by /api/checkout server-side price validation
+      if (normalizedSql.includes('where id in')) {
+        const ids = params.map(Number);
+        return filtered
+          .filter(p => ids.includes(p.id))
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            image_url: p.image_url,
+            price: p.price,
+            discount_price: p.discount_price,
+            stock: p.stock ?? 0,
+          }));
+      }
+
       // Hydrate all products
       const hydrated = filtered.map(p => hydrateProductRelations(p, db));
       return hydrated;
+    }
+
+    if (normalizedSql.includes('from orders')) {
+      if (!db.orders) return [];
+      // WHERE user_phone = ?
+      if (normalizedSql.includes('where user_phone =') || normalizedSql.includes('where user_phone=')) {
+        const userPhone = params[0];
+        return db.orders.filter(o => o.user_phone === userPhone);
+      }
+      // WHERE id = ? — used by webhook idempotency check
+      if (normalizedSql.includes('where id =')) {
+        const id = params[0];
+        return db.orders.filter(o => o.id === id);
+      }
+      return db.orders;
     }
 
     if (normalizedSql.includes('from coupons')) {
@@ -1096,12 +1135,36 @@ function simulateSQLQuery(sql: string, params: any[]): any {
         phone: params[3] || null,
         otp: params[4] || null,
         otp_expiry: params[5] || null,
-        role: params[6] || 'customer',
-        created_at: params[7] || new Date().toISOString()
+        otp_attempts: params[6] !== undefined ? Number(params[6]) : 0,
+        last_otp_request_at: params[7] || null,
+        role: params[8] || 'customer',
+        created_at: params[9] || new Date().toISOString()
       };
       db.users.push(newUser);
       saveJsonDb(db);
       return { insertId: nextId, affectedRows: 1 };
+    }
+
+    if (normalizedSql.includes('insert into orders')) {
+      const newOrder: Order = {
+        id: params[0] || '',
+        user_phone: params[1] || '',
+        user_name: params[2] || '',
+        user_email: params[3] || '',
+        items: typeof params[4] === 'string' ? params[4] : JSON.stringify(params[4] || []),
+        total_amount: Number(params[5]) || 0,
+        status: params[6] || 'pending',
+        shipping_address: typeof params[7] === 'string' ? params[7] : JSON.stringify(params[7] || {}),
+        payment_method: params[8] || 'mock',
+        stripe_session_id: params[9] || null,
+        coupon_code: params[10] || null,
+        discount_amount: params[11] ? Number(params[11]) : 0,
+        created_at: params[12] || new Date().toISOString(),
+      };
+      if (!db.orders) db.orders = [];
+      db.orders.unshift(newOrder);
+      saveJsonDb(db);
+      return { insertId: newOrder.id, affectedRows: 1 };
     }
 
     if (normalizedSql.includes('insert into inquiries')) {
@@ -1258,32 +1321,51 @@ function simulateSQLQuery(sql: string, params: any[]): any {
   // 3. UPDATE entries
   if (normalizedSql.startsWith('update')) {
     if (normalizedSql.includes('update users')) {
-      if (normalizedSql.includes('set otp =') && normalizedSql.includes('otp_expiry =')) {
-        const otp = params[0];
-        const otp_expiry = params[1];
+
+      // ── OTP SEND UPDATE ────────────────────────────────────────────────
+      // SQL:    UPDATE users SET otp=?, otp_expiry=?, otp_attempts=0, last_otp_request_at=? WHERE id=?
+      // NOTE:   otp_attempts=0 is a hardcoded literal — NOT a '?' parameter.
+      // params: [otp, otp_expiry, last_otp_request_at, id]  (4 values only)
+      if (normalizedSql.includes('set otp =') && normalizedSql.includes('otp_expiry =') && normalizedSql.includes('otp_attempts')) {
+        const otp               = params[0];
+        const otp_expiry        = params[1];
+        const last_otp_request_at = params[2]; // ← was wrongly params[3]
+        const id                = Number(params[3]); // ← was wrongly params[4]
+        const u = db.users.find(x => x.id === id);
+        if (u) {
+          u.otp = otp;
+          u.otp_expiry = otp_expiry;
+          u.otp_attempts = 0;
+          u.last_otp_request_at = last_otp_request_at;
+          saveJsonDb(db);
+          return { affectedRows: 1 };
+        }
+        return { affectedRows: 0 };
+
+      // ── OTP VERIFY CLEAR ───────────────────────────────────────────────
+      // SQL:    UPDATE users SET otp=?, otp_expiry=?, otp_attempts=0 WHERE id=?
+      // params: [null, null, id]  (3 values — otp_attempts=0 is literal)
+      } else if (normalizedSql.includes('set otp =') && normalizedSql.includes('otp_expiry =')) {
+        const otp       = params[0]; // null
+        const otp_expiry = params[1]; // null
         if (normalizedSql.includes('where id =')) {
           const id = Number(params[2]);
           const u = db.users.find(x => x.id === id);
           if (u) {
             u.otp = otp;
             u.otp_expiry = otp_expiry;
-            saveJsonDb(db);
-            return { affectedRows: 1 };
-          }
-        } else if (normalizedSql.includes('where phone =')) {
-          const phone = params[2];
-          const u = db.users.find(x => x.phone === phone);
-          if (u) {
-            u.otp = otp;
-            u.otp_expiry = otp_expiry;
+            u.otp_attempts = 0; // always reset on successful verify
             saveJsonDb(db);
             return { affectedRows: 1 };
           }
         }
+        return { affectedRows: 0 };
+
+      // ── PROFILE UPDATE ─────────────────────────────────────────────────
       } else if (normalizedSql.includes('set name =') && normalizedSql.includes('email =')) {
-        const name = params[0];
+        const name  = params[0];
         const email = params[1];
-        const id = Number(params[2]);
+        const id    = Number(params[2]);
         const u = db.users.find(x => x.id === id);
         if (u) {
           u.name = name;
@@ -1291,6 +1373,42 @@ function simulateSQLQuery(sql: string, params: any[]): any {
           saveJsonDb(db);
           return { affectedRows: 1 };
         }
+      }
+    }
+
+
+    if (normalizedSql.includes('update orders')) {
+      // Webhook update: SET status=?, stripe_payment_intent_id=?, payment_confirmed_at=? WHERE id=?
+      if (normalizedSql.includes('stripe_payment_intent_id')) {
+        const status = params[0];
+        const stripe_payment_intent_id = params[1];
+        const payment_confirmed_at = params[2];
+        const id = params[3];
+        if (!db.orders) db.orders = [];
+        const o = db.orders.find(x => x.id === id);
+        if (o) {
+          // Idempotency check
+          if (o.status === 'paid') return { affectedRows: 0 };
+          o.status = status;
+          (o as any).stripe_payment_intent_id = stripe_payment_intent_id;
+          (o as any).payment_confirmed_at = payment_confirmed_at;
+          saveJsonDb(db);
+          return { affectedRows: 1 };
+        }
+        return { affectedRows: 0 };
+      }
+      // Status-only update: SET status=? WHERE id=?
+      if (normalizedSql.includes('set status =')) {
+        const status = params[0];
+        const id = params[1];
+        if (!db.orders) db.orders = [];
+        const o = db.orders.find(x => x.id === id);
+        if (o) {
+          o.status = status;
+          saveJsonDb(db);
+          return { affectedRows: 1 };
+        }
+        return { affectedRows: 0 };
       }
     }
 

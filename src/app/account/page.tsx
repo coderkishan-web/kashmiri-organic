@@ -45,8 +45,9 @@ export default function CustomerAccountPage() {
           setEmail(data.user.email || '');
 
           // Fetch real orders
-          if (data.user.phone) {
-            fetch(`/api/customer/orders/list?phone=${data.user.phone}`)
+          const orderIdentifier = data.user.phone || data.user.email;
+          if (orderIdentifier) {
+            fetch(`/api/customer/orders/list?phone=${encodeURIComponent(orderIdentifier)}`)
               .then((res) => res.json())
               .then((orderData) => {
                 if (orderData.orders) {

@@ -4,8 +4,8 @@
   --background: #F7F3EB; /* Cream White background */
   --foreground: #1E1E1E; /* Primary text */
   
-  --font-inter: var(--font-inter);
-  --font-playfair: var(--font-playfair);
+  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-playfair: "Playfair Display", Georgia, "Times New Roman", serif;
 }
 
 @theme {

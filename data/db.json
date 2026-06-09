@@ -17,14 +17,16 @@
       "email": "sjodme@gmail.com",
       "password_hash": "",
       "phone": "9876543210",
-      "otp": null,
-      "otp_expiry": null,
+      "otp": "916794",
+      "otp_expiry": "2026-06-09T01:28:36.212Z",
       "role": "customer",
       "created_at": "2026-06-06T18:38:04.093Z",
       "address": "vasai road",
       "city": "vasai",
       "pinCode": "300002",
-      "country": "India"
+      "country": "India",
+      "otp_attempts": 0,
+      "last_otp_request_at": "2026-06-09T01:23:36.214Z"
     },
     {
       "id": 3,
@@ -62,6 +64,32 @@
       "phone": null,
       "otp": null,
       "otp_expiry": null
+    },
+    {
+      "id": 6,
+      "name": "kishan",
+      "email": "kishanshinde715@gmail.com",
+      "password_hash": "",
+      "phone": null,
+      "otp": "745394",
+      "otp_expiry": "2026-06-09T01:52:11.224Z",
+      "otp_attempts": 0,
+      "last_otp_request_at": "2026-06-09T01:47:11.228Z",
+      "role": "customer",
+      "created_at": "2026-06-08T23:42:12.655Z"
+    },
+    {
+      "id": 7,
+      "name": "",
+      "email": "test-email@kashmiri.com",
+      "password_hash": "",
+      "phone": null,
+      "otp": "851776",
+      "otp_expiry": "2026-06-09T00:29:01.979Z",
+      "otp_attempts": 0,
+      "last_otp_request_at": "2026-06-09T00:24:01.981Z",
+      "role": "customer",
+      "created_at": "2026-06-09T00:00:51.714Z"
     }
   ],
   "categories": [
@@ -1064,6 +1092,83 @@
   ],
   "orders": [
     {
+      "id": "KO-ORD-2026-9869",
+      "user_phone": "kishanshinde715@gmail.com",
+      "user_name": "kishan",
+      "user_email": "kishanshinde715@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"image_url\":\"/images/products/saffron.jpg\",\"unitPrice\":299,\"quantity\":1,\"lineTotal\":299}]",
+      "total_amount": 649,
+      "status": "delivered",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"kishanshinde715@gmail.com\",\"address\":\"30239 hsi\",\"pinCode\":\"32343423\",\"city\":\"sdfg\",\"country\":\"India\"}",
+      "payment_method": "stripe_card",
+      "stripe_session_id": "cs_test_b1szoJsYs8dEZVdFk3WDfjNeRfOBiynANbYahlbJeTe0SxMW03GsTfWSeF",
+      "coupon_code": null,
+      "discount_amount": 0,
+      "created_at": "2026-06-09T02:36:15.969Z",
+      "stripe_payment_intent_id": "pi_3TgQpr3k6s062EDs1GJBsglv",
+      "payment_confirmed_at": "2026-06-09T02:39:10.904Z"
+    },
+    {
+      "id": "KO-ORD-2026-8087",
+      "user_phone": "kishanshinde715@gmail.com",
+      "user_name": "kishan",
+      "user_email": "kishanshinde715@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"image_url\":\"/images/products/saffron.jpg\",\"unitPrice\":299,\"quantity\":1,\"lineTotal\":299}]",
+      "total_amount": 649,
+      "status": "processing",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"kishanshinde715@gmail.com\",\"address\":\"dsfjndfnjkjkfndjkfnd\",\"pinCode\":\"2309932\",\"city\":\"dfsv\",\"country\":\"India\"}",
+      "payment_method": "mock",
+      "stripe_session_id": null,
+      "coupon_code": null,
+      "discount_amount": 0,
+      "created_at": "2026-06-09T01:48:41.732Z"
+    },
+    {
+      "id": "KO-ORD-2026-2032",
+      "user_phone": "test-email@kashmiri.com",
+      "user_name": "Test Recipient",
+      "user_email": "test-email@kashmiri.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"image_url\":\"/images/products/saffron.jpg\",\"unitPrice\":299,\"quantity\":1,\"lineTotal\":299}]",
+      "total_amount": 649,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"Test Recipient\",\"email\":\"test-email@kashmiri.com\",\"address\":\"123 Kashmiri Saffron Lane\",\"pinCode\":\"190001\",\"city\":\"Srinagar\",\"country\":\"India\"}",
+      "payment_method": "mock",
+      "stripe_session_id": null,
+      "coupon_code": null,
+      "discount_amount": 0,
+      "created_at": "2026-06-09T00:05:52.295Z"
+    },
+    {
+      "id": "KO-ORD-2026-8582",
+      "user_phone": "9876543210",
+      "user_name": "kishan",
+      "user_email": "sjodme@gmail.com",
+      "items": "[{\"id\":7,\"name\":\"Pure Kesar Badam Infused Honey\",\"image_url\":\"https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80\",\"unitPrice\":1299,\"quantity\":13,\"lineTotal\":16887}]",
+      "total_amount": 17237,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"sjodme@gmail.com\",\"address\":\"vasai road\",\"pinCode\":\"300002\",\"city\":\"vasai\",\"country\":\"India\"}",
+      "payment_method": "mock",
+      "stripe_session_id": null,
+      "coupon_code": null,
+      "discount_amount": 0,
+      "created_at": "2026-06-08T23:45:13.169Z"
+    },
+    {
+      "id": "KO-ORD-2026-9735",
+      "user_phone": "9876543210",
+      "user_name": "kishan",
+      "user_email": "sjodme@gmail.com",
+      "items": "[{\"id\":1,\"name\":\"Kashmiri Mongra Saffron (Grade A+)\",\"image_url\":\"/images/products/saffron.jpg\",\"unitPrice\":299,\"quantity\":2,\"lineTotal\":598}]",
+      "total_amount": 948,
+      "status": "paid",
+      "shipping_address": "{\"name\":\"kishan\",\"email\":\"sjodme@gmail.com\",\"address\":\"vasai road\",\"pinCode\":\"300002\",\"city\":\"vasai\",\"country\":\"India\"}",
+      "payment_method": "mock",
+      "stripe_session_id": null,
+      "coupon_code": null,
+      "discount_amount": 0,
+      "created_at": "2026-06-08T23:30:58.230Z"
+    },
+    {
       "id": "KO-ORD-2026-2391",
       "user_phone": "9326810212",
       "user_name": "kishan",
@@ -1165,6 +1270,22 @@
     }
   ],
   "admin_activities": [
+    {
+      "id": 1780972814257,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-9869 to delivered",
+      "created_at": "2026-06-09T02:40:14.257Z"
+    },
+    {
+      "id": 1780969778698,
+      "admin_id": 1,
+      "admin_name": "Admin Kashmiri Organic",
+      "action": "UPDATE_ORDER_STATUS",
+      "details": "Updated status of order KO-ORD-2026-8087 to processing",
+      "created_at": "2026-06-09T01:49:38.698Z"
+    },
     {
       "id": 1780801466269,
       "admin_id": 1,

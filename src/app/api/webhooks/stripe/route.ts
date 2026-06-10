@@ -102,8 +102,8 @@ async function handlePaymentIntentSucceeded(
   }
 
   // ------ Fetch current order state ------
-  const orders = await executeQuery<{ id: string; status: string }[]>(
-    'SELECT id, status FROM orders WHERE id = ? LIMIT 1',
+  const orders = await executeQuery<any[]>(
+    'SELECT * FROM orders WHERE id = ? LIMIT 1',
     [orderId]
   );
 
@@ -141,6 +141,22 @@ async function handlePaymentIntentSucceeded(
     `  PaymentIntent:   ${paymentIntent.id}\n` +
     `  ConfirmedAt:     ${paymentConfirmedAt}`
   );
+
+  // Send Order Confirmation Email
+  if (order.user_email) {
+    try {
+      const { sendOrderConfirmationEmail } = await import('@/lib/email');
+      const updatedOrder = {
+        ...order,
+        status: 'paid',
+        stripe_payment_intent_id: paymentIntent.id,
+        payment_confirmed_at: paymentConfirmedAt,
+      };
+      await sendOrderConfirmationEmail(order.user_email, updatedOrder);
+    } catch (emailErr) {
+      console.error(`[webhook/stripe] Failed to send confirmation email for order ${orderId}:`, emailErr);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -160,8 +176,8 @@ async function handleCheckoutSessionCompleted(
   }
 
   // ------ Fetch current order state ------
-  const orders = await executeQuery<{ id: string; status: string }[]>(
-    'SELECT id, status FROM orders WHERE id = ? LIMIT 1',
+  const orders = await executeQuery<any[]>(
+    'SELECT * FROM orders WHERE id = ? LIMIT 1',
     [orderId]
   );
 
@@ -207,4 +223,20 @@ async function handleCheckoutSessionCompleted(
     `  PaymentIntent:   ${paymentIntentId ?? 'n/a'}\n` +
     `  ConfirmedAt:     ${paymentConfirmedAt}`
   );
+
+  // Send Order Confirmation Email
+  if (order.user_email) {
+    try {
+      const { sendOrderConfirmationEmail } = await import('@/lib/email');
+      const updatedOrder = {
+        ...order,
+        status: 'paid',
+        stripe_payment_intent_id: paymentIntentId,
+        payment_confirmed_at: paymentConfirmedAt,
+      };
+      await sendOrderConfirmationEmail(order.user_email, updatedOrder);
+    } catch (emailErr) {
+      console.error(`[webhook/stripe] Failed to send confirmation email for order ${orderId}:`, emailErr);
+    }
+  }
 }

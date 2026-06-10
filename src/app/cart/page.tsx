@@ -9,6 +9,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Stripe Embedded Payment Element imports
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import StripePaymentForm from '@/components/StripePaymentForm';
+
+// Initialize Stripe promise using publishable key env variable
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+
 export default function CartPage() {
   const router = useRouter();
   
@@ -19,8 +27,9 @@ export default function CartPage() {
   const [paymentMode, setPaymentMode] = useState<'mock' | 'stripe'>('mock');
   
   // Checkout process states
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'payment' | 'success'>('cart');
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'payment' | 'stripe_payment' | 'success'>('cart');
   const [orderId, setOrderId] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
   const [placingOrder, setPlacingOrder] = useState(false);
 
   // Shipping Form State
@@ -232,10 +241,11 @@ export default function CartPage() {
         return;
       }
 
-      // PAYMENT_MODE=stripe → redirect to Stripe Checkout
-      if (data.url) {
-        saveCart([]); // Clear cart before redirect so it's empty on return
-        window.location.href = data.url;
+      // PAYMENT_MODE=stripe → handle inline PaymentElement initialization
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setOrderId(data.orderId);
+        setCheckoutStep('stripe_payment');
         return;
       }
 
@@ -622,6 +632,37 @@ export default function CartPage() {
               >
                 Cancel & Go Back
               </button>
+            </motion.div>
+          )}
+
+          {/* STEP 3.5: STRIPE EMBEDDED PAYMENT */}
+          {checkoutStep === 'stripe_payment' && clientSecret && (
+            <motion.div
+              key="stripe-payment-step"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="max-w-md mx-auto"
+            >
+              <button 
+                onClick={() => setCheckoutStep('shipping')}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#8A968E] hover:text-[#C5A880] mb-6 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" /> Cancel & Go Back
+              </button>
+
+              <div className="bg-white border border-[#1B3527]/10 rounded-3xl p-8 shadow-xl space-y-6">
+                <div className="text-center mb-4">
+                  <h2 className="font-serif text-2xl font-bold">Secure Checkout</h2>
+                  <p className="text-xs text-[#8A968E] mt-1">
+                    Sourcing Cost: <span className="font-bold text-[#1B3527]">₹{total.toLocaleString('en-IN')}</span>
+                  </p>
+                </div>
+
+                <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'flat' } }}>
+                  <StripePaymentForm orderId={orderId} totalAmount={total} />
+                </Elements>
+              </div>
             </motion.div>
           )}
 

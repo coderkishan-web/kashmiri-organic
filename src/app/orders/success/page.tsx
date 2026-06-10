@@ -14,6 +14,13 @@ export default function OrderSuccessPage() {
 
   useEffect(() => {
     setMounted(true);
+    try {
+      localStorage.removeItem('kashmiri_organic_cart');
+      // Dispatch a custom event to notify any open layout components (like Navbar cart count badge)
+      window.dispatchEvent(new Event('storage'));
+    } catch (e) {
+      console.error('Failed to clear cart in success page', e);
+    }
   }, []);
 
   if (!mounted) return null;

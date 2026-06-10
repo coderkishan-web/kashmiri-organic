@@ -69,8 +69,8 @@ async function createOrderRecord(orderData: Record<string, unknown>): Promise<vo
   const sql = `
     INSERT INTO orders 
     (id, user_phone, user_name, user_email, items, total_amount, status, shipping_address,
-     payment_method, stripe_session_id, coupon_code, discount_amount, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     payment_method, stripe_session_id, stripe_payment_intent_id, coupon_code, discount_amount, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   await executeQuery(sql, [
     orderData.id,
@@ -83,6 +83,7 @@ async function createOrderRecord(orderData: Record<string, unknown>): Promise<vo
     JSON.stringify(orderData.shipping_address),
     orderData.payment_method,
     orderData.stripe_session_id ?? null,
+    orderData.stripe_payment_intent_id ?? null,
     orderData.coupon_code ?? null,
     orderData.discount_amount ?? 0,
     orderData.created_at,
@@ -211,11 +212,21 @@ export async function POST(req: NextRequest) {
     // PAYMENT_MODE=mock — create order as 'paid' immediately
     // =========================================================
     if (paymentMode === 'mock') {
-      const order = { ...orderBase, status: 'paid', stripe_session_id: null };
+      const order = { ...orderBase, status: 'paid', stripe_session_id: null, stripe_payment_intent_id: null };
 
       await createOrderRecord(order);
 
       console.log(`[MOCK PAYMENT] Order ${orderId} created and marked as paid.`);
+
+      // Send Order Confirmation Email
+      if (order.user_email) {
+        try {
+          const { sendOrderConfirmationEmail } = await import('@/lib/email');
+          await sendOrderConfirmationEmail(order.user_email, order);
+        } catch (emailErr) {
+          console.error('[MOCK PAYMENT] Failed to send order confirmation email:', emailErr);
+        }
+      }
 
       return NextResponse.json({ success: true, order });
     }

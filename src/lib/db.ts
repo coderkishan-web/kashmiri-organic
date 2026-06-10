@@ -795,7 +795,7 @@ const getPool = (): mysql.Pool => {
       database: process.env.DB_NAME || 'kashmiri_organic',
       port: parseInt(process.env.DB_PORT || '3306'),
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 2,
       queueLimit: 0,
     });
   }
@@ -1146,21 +1146,42 @@ function simulateSQLQuery(sql: string, params: any[]): any {
     }
 
     if (normalizedSql.includes('insert into orders')) {
-      const newOrder: Order = {
-        id: params[0] || '',
-        user_phone: params[1] || '',
-        user_name: params[2] || '',
-        user_email: params[3] || '',
-        items: typeof params[4] === 'string' ? params[4] : JSON.stringify(params[4] || []),
-        total_amount: Number(params[5]) || 0,
-        status: params[6] || 'pending',
-        shipping_address: typeof params[7] === 'string' ? params[7] : JSON.stringify(params[7] || {}),
-        payment_method: params[8] || 'mock',
-        stripe_session_id: params[9] || null,
-        coupon_code: params[10] || null,
-        discount_amount: params[11] ? Number(params[11]) : 0,
-        created_at: params[12] || new Date().toISOString(),
-      };
+      let newOrder: Order;
+      if (params.length === 14) {
+        newOrder = {
+          id: params[0] || '',
+          user_phone: params[1] || '',
+          user_name: params[2] || '',
+          user_email: params[3] || '',
+          items: typeof params[4] === 'string' ? params[4] : JSON.stringify(params[4] || []),
+          total_amount: Number(params[5]) || 0,
+          status: params[6] || 'pending',
+          shipping_address: typeof params[7] === 'string' ? params[7] : JSON.stringify(params[7] || {}),
+          payment_method: params[8] || 'mock',
+          stripe_session_id: params[9] || null,
+          stripe_payment_intent_id: params[10] || null,
+          coupon_code: params[11] || null,
+          discount_amount: params[12] ? Number(params[12]) : 0,
+          created_at: params[13] || new Date().toISOString(),
+        };
+      } else {
+        newOrder = {
+          id: params[0] || '',
+          user_phone: params[1] || '',
+          user_name: params[2] || '',
+          user_email: params[3] || '',
+          items: typeof params[4] === 'string' ? params[4] : JSON.stringify(params[4] || []),
+          total_amount: Number(params[5]) || 0,
+          status: params[6] || 'pending',
+          shipping_address: typeof params[7] === 'string' ? params[7] : JSON.stringify(params[7] || {}),
+          payment_method: params[8] || 'mock',
+          stripe_session_id: params[9] || null,
+          stripe_payment_intent_id: null,
+          coupon_code: params[10] || null,
+          discount_amount: params[11] ? Number(params[11]) : 0,
+          created_at: params[12] || new Date().toISOString(),
+        };
+      }
       if (!db.orders) db.orders = [];
       db.orders.unshift(newOrder);
       saveJsonDb(db);

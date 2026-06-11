@@ -4,7 +4,7 @@ import React, { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Product, Category, Material, Blog, Testimonial, Certification } from '@/lib/db';
-import { Shield, Sparkles, Sprout, BadgeCheck, ArrowRight, MessageSquare, Star, Search, Globe, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, Sparkles, Sprout, BadgeCheck, ArrowRight, MessageSquare, Star, Search, Globe, CheckCircle2, ChevronLeft, ChevronRight, Award, FileText, Compass } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
@@ -231,47 +231,68 @@ export default function HomeClientWrapper({
             </p>
           </motion.div>
           
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-5 gap-6"
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={1.3}
+            pagination={{
+              el: '.swiper-pagination-categories',
+              clickable: true,
+            }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            breakpoints={{
+              640: {
+                slidesPerView: 2.3,
+                spaceBetween: 20,
+              },
+              768: {
+                slidesPerView: 3.5,
+                spaceBetween: 24,
+              },
+              1024: {
+                slidesPerView: 5,
+                spaceBetween: 24,
+              },
+            }}
+            className="categories-swiper pb-8"
           >
             {categories.map((cat, index) => (
-              <motion.div
-                key={cat.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-                whileHover={{ scale: 1.04, y: -4 }}
-                className="relative overflow-hidden rounded-2xl aspect-[3/4] flex flex-col justify-end p-5 luxury-shadow cursor-pointer"
-              >
-                <Link href={`/products?category=${cat.slug}`} className="absolute inset-0 z-20" />
-                {/* Background image */}
-                <div className="absolute inset-0 bg-brand-green/20 z-10 transition-colors"></div>
-                <img
-                  src={categoryImages[cat.slug] || '/images/category-placeholder.jpg'}
-                  alt={cat.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
-                />
-                
-                {/* Bottom Shadow */}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-green via-brand-green/40 to-transparent z-15"></div>
-                
-                {/* Content */}
-                <div className="relative z-20 text-bg-cream">
-                  <h3 className="font-serif text-lg font-bold text-bg-cream">
-                    {cat.name}
-                  </h3>
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-brand-gold flex items-center gap-1 mt-1">
-                    Explore Collection <ArrowRight className="w-2.5 h-2.5 ml-1" />
-                  </span>
-                </div>
-              </motion.div>
+              <SwiperSlide key={cat.id} className="h-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                  whileHover={{ scale: 1.04, y: -4 }}
+                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] flex flex-col justify-end p-5 luxury-shadow cursor-pointer h-full"
+                >
+                  <Link href={`/products?category=${cat.slug}`} className="absolute inset-0 z-20" />
+                  {/* Background image */}
+                  <div className="absolute inset-0 bg-brand-green/20 z-10 transition-colors"></div>
+                  <img
+                    src={categoryImages[cat.slug] || '/images/category-placeholder.jpg'}
+                    alt={cat.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  
+                  {/* Bottom Shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-green via-brand-green/40 to-transparent z-15"></div>
+                  
+                  {/* Content */}
+                  <div className="relative z-20 text-bg-cream">
+                    <h3 className="font-serif text-lg font-bold text-bg-cream">
+                      {cat.name}
+                    </h3>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-brand-gold flex items-center gap-1 mt-1">
+                      Explore Collection <ArrowRight className="w-2.5 h-2.5 ml-1" />
+                    </span>
+                  </div>
+                </motion.div>
+              </SwiperSlide>
             ))}
-          </motion.div>
+          </Swiper>
+          
+          <div className="swiper-pagination-categories flex justify-center items-center gap-2 mt-4"></div>
         </div>
       </section>
 
@@ -302,84 +323,122 @@ export default function HomeClientWrapper({
             </Link>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {products.slice(0, 3).map((prod, index) => (
-              <motion.div
-                key={prod.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -8, boxShadow: '0 20px 30px -10px rgba(18, 43, 37, 0.12)' }}
-                className="bg-bg-beige/10 rounded-3xl overflow-hidden border border-brand-green/5 luxury-shadow flex flex-col justify-between"
-              >
-                {/* Product Image & Badges */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg-mist">
-                  {prod.export_quality === 1 && (
-                    <span className="absolute top-4 left-4 z-10 bg-brand-green text-brand-gold text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
-                      Export Grade
-                    </span>
-                  )}
-                  {prod.certified === 1 && (
-                    <span className="absolute top-4 right-4 z-10 bg-brand-gold text-brand-green text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded flex items-center gap-1">
-                      <BadgeCheck className="w-3.5 h-3.5" /> Certified
-                    </span>
-                  )}
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            spaceBetween={24}
+            slidesPerView={1.25}
+            navigation={{
+              nextEl: '.swiper-button-next-products',
+              prevEl: '.swiper-button-prev-products',
+            }}
+            pagination={{
+              el: '.swiper-pagination-products',
+              clickable: true,
+            }}
+            autoplay={{ delay: 6000, disableOnInteraction: false }}
+            breakpoints={{
+              640: {
+                slidesPerView: 2.3,
+                spaceBetween: 24,
+              },
+              1024: {
+                slidesPerView: 3.15,
+                spaceBetween: 32,
+              },
+            }}
+            className="products-swiper pb-6"
+          >
+            {products.slice(0, 8).map((prod, index) => (
+              <SwiperSlide key={prod.id} className="h-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                  whileHover={{ y: -8, boxShadow: '0 20px 30px -10px rgba(18, 43, 37, 0.12)' }}
+                  className="group bg-bg-beige/10 rounded-3xl overflow-hidden border border-brand-green/5 luxury-shadow flex flex-col justify-between h-full"
+                >
+                  {/* Product Image & Badges */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg-mist">
+                    {prod.export_quality === 1 && (
+                      <span className="absolute top-4 left-4 z-10 bg-brand-green text-brand-gold text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                        Export Grade
+                      </span>
+                    )}
+                    {prod.certified === 1 && (
+                      <span className="absolute top-4 right-4 z-10 bg-brand-gold text-brand-green text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded flex items-center gap-1">
+                        <BadgeCheck className="w-3.5 h-3.5" /> Certified
+                      </span>
+                    )}
+                    
+                    <img
+                      src={productImages[prod.id] || prod.image_url}
+                      alt={prod.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
                   
-                  <img
-                    src={productImages[prod.id] || prod.image_url}
-                    alt={prod.name}
-                    className="w-full h-full object-cover transition-transform duration-500"
-                  />
-                </div>
-                
-                {/* Product Body */}
-                <div className="p-6 flex flex-col flex-grow justify-between">
-                  <div>
-                    {/* Category / Material tags */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold">
-                        {prod.categories?.[0]?.name || 'Botanical'}
-                      </span>
-                      <span className="w-1 h-1 bg-text-muted rounded-full"></span>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-brand-brown">
-                        {prod.materials?.[0]?.name || 'Origin'}
-                      </span>
-                    </div>
-                    
-                    <h3 className="font-serif text-xl font-bold text-brand-green mb-2 hover:text-brand-gold transition-colors leading-snug">
-                      <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
-                    </h3>
-                    
-                    <p className="text-xs sm:text-sm text-text-secondary font-light leading-relaxed mb-4 line-clamp-3">
-                      {prod.short_description}
-                    </p>
-
-                    {/* Mini benefits list */}
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {prod.benefits?.map((ben) => (
-                        <span key={ben.id} className="text-[10px] bg-brand-sage/15 text-brand-green px-2 py-0.5 rounded font-medium">
-                          {ben.name}
+                  {/* Product Body */}
+                  <div className="p-6 flex flex-col flex-grow justify-between">
+                    <div>
+                      {/* Category / Material tags */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-brand-gold">
+                          {prod.categories?.[0]?.name || 'Botanical'}
                         </span>
-                      ))}
+                        <span className="w-1 h-1 bg-text-muted rounded-full"></span>
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-brand-brown">
+                          {prod.materials?.[0]?.name || 'Origin'}
+                        </span>
+                      </div>
+                      
+                      <h3 className="font-serif text-xl font-bold text-brand-green mb-2 hover:text-brand-gold transition-colors leading-snug">
+                        <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
+                      </h3>
+                      
+                      <p className="text-xs sm:text-sm text-text-secondary font-light leading-relaxed mb-4 line-clamp-3">
+                        {prod.short_description}
+                      </p>
+
+                      {/* Mini benefits list */}
+                      <div className="flex flex-wrap gap-1.5 mb-6">
+                        {prod.benefits?.map((ben) => (
+                          <span key={ben.id} className="text-[10px] bg-brand-sage/15 text-brand-green px-2 py-0.5 rounded font-medium">
+                            {ben.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Inquiry action */}
+                    <div className="border-t border-brand-green/5 pt-4 flex items-center justify-between mt-auto">
+                      <span className="text-xs text-text-muted font-light">
+                        MOQ: {prod.moq}
+                      </span>
+                      <Link
+                        href={`/products/${prod.slug}`}
+                        className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors duration-300"
+                      >
+                        Explore Harvest
+                      </Link>
                     </div>
                   </div>
-                  
-                  {/* Inquiry action */}
-                  <div className="border-t border-brand-green/5 pt-4 flex items-center justify-between mt-auto">
-                    <span className="text-xs text-text-muted font-light">
-                      MOQ: {prod.moq}
-                    </span>
-                    <Link
-                      href={`/products/${prod.slug}`}
-                      className="bg-brand-green hover:bg-brand-gold hover:text-brand-green text-bg-cream px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors duration-300"
-                    >
-                      Explore Harvest
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </SwiperSlide>
             ))}
+          </Swiper>
+
+          {/* Custom Brand Navigation & Pagination Controls below the products swiper */}
+          <div className="flex items-center justify-center gap-6 mt-10">
+            <button className="swiper-button-prev-products w-11 h-11 rounded-full border border-brand-green/20 text-brand-green bg-bg-cream hover:bg-brand-green hover:text-bg-cream flex items-center justify-center transition-all duration-300 shadow-sm hover:border-brand-gold disabled:opacity-40 disabled:pointer-events-none group">
+              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            
+            <div className="swiper-pagination-products !static !w-auto flex justify-center items-center gap-2"></div>
+            
+            <button className="swiper-button-next-products w-11 h-11 rounded-full border border-brand-green/20 text-brand-green bg-bg-cream hover:bg-brand-green hover:text-bg-cream flex items-center justify-center transition-all duration-300 shadow-sm hover:border-brand-gold disabled:opacity-40 disabled:pointer-events-none group">
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </div>
         </div>
       </section>
@@ -622,20 +681,66 @@ export default function HomeClientWrapper({
       </section>
 
       {/* ========================================================
-          6. CERTIFICATIONS APPROVED ROW
+          6. CERTIFICATIONS APPROVED SECTION (Redesigned for Premium Appeal)
           ======================================================== */}
-          <section className="py-14 bg-bg-beige/25 border-y border-brand-green/5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-brown mb-6">
-            Approved under international organic & standards boards
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-70 hover:opacity-90 transition-opacity duration-300">
-            {certifications.map((cert) => (
-              <div key={cert.id} className="flex items-center gap-2">
-                <span className="font-serif text-sm font-bold text-brand-green italic">{cert.name}</span>
-                <span className="text-[10px] text-text-muted">({cert.description})</span>
-              </div>
-            ))}
+      <section className="py-20 bg-bg-cream px-4 sm:px-6 lg:px-8 border-y border-brand-green/5">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center max-w-2xl mx-auto mb-12"
+          >
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2 block">
+              Quality Assurance
+            </span>
+            <h2 className="text-3xl font-serif font-bold text-brand-green">
+              Approved Under International Standards
+            </h2>
+            <div className="w-12 h-0.5 bg-brand-gold mx-auto mt-4 mb-4"></div>
+            <p className="text-sm text-text-secondary font-light">
+              Our products are certified by leading global and national standard boards, ensuring uncompromised purity and ethical origin.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {certifications.map((cert, index) => {
+              // Map icons dynamically
+              let Icon = Shield;
+              if (cert.name.toLowerCase().includes('india')) Icon = Award;
+              if (cert.name.toLowerCase().includes('usda')) Icon = Sprout;
+              if (cert.name.toLowerCase().includes('iso')) Icon = FileText;
+              if (cert.name.toLowerCase().includes('gi tag')) Icon = Compass;
+
+              return (
+                <motion.div
+                  key={cert.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -6, boxShadow: '0 20px 30px -10px rgba(18, 43, 37, 0.08)' }}
+                  className="bg-bg-beige/10 p-8 rounded-3xl border border-brand-green/5 flex flex-col items-center text-center justify-between group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-brand-green/5 text-brand-green flex items-center justify-center mb-6 group-hover:bg-brand-green group-hover:text-brand-gold transition-all duration-300 shadow-inner">
+                    <Icon className="w-8 h-8 transition-transform duration-300 group-hover:rotate-6" />
+                  </div>
+                  
+                  <div className="flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-brand-green mb-3 group-hover:text-brand-gold transition-colors">
+                        {cert.name}
+                      </h3>
+                      <p className="text-xs text-text-secondary leading-relaxed font-light">
+                        {cert.description}
+                      </p>
+                    </div>
+                    
+                    <div className="w-8 h-0.5 bg-brand-green/10 mx-auto mt-6 group-hover:bg-brand-gold/40 transition-colors"></div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -724,15 +829,15 @@ export default function HomeClientWrapper({
       </section>
 
       {/* ========================================================
-          8. TESTIMONIALS WITH viewport delay FADES
+          8. TESTIMONIALS WITH DUAL ROW INFINITE MARQUEE (Right & Left)
           ======================================================== */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-bg-cream">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-24 bg-bg-cream overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center max-w-2xl mx-auto mb-16"
+            className="max-w-2xl mx-auto"
           >
             <span className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2 block">
               Worldwide Trust
@@ -742,41 +847,96 @@ export default function HomeClientWrapper({
             </h2>
             <div className="w-12 h-0.5 bg-brand-gold mx-auto mt-4 mb-4"></div>
           </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((test, index) => (
-              <motion.div
-                key={test.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className="bg-bg-beige/10 p-8 rounded-3xl border border-brand-green/5 luxury-shadow relative flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-1 text-brand-gold mb-4">
-                    {[...Array(test.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current animate-pulse" />
-                    ))}
+        </div>
+
+        {/* Marquee Container */}
+        <div className="w-full relative flex flex-col gap-6">
+          {/* Left & Right Fade Gradients */}
+          <div className="absolute inset-y-0 left-0 w-16 sm:w-48 bg-gradient-to-r from-bg-cream via-bg-cream/70 to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute inset-y-0 right-0 w-16 sm:w-48 bg-gradient-to-l from-bg-cream via-bg-cream/70 to-transparent z-10 pointer-events-none"></div>
+
+          {/* Row 1: Upper Row (Right Scroll) */}
+          <div className="w-full overflow-hidden">
+            <div className="animate-marquee-right py-2">
+              {[
+                ...(testimonials[0] ? [testimonials[0]] : [{ id: 1, name: 'Clara Dupont', role: 'Sourcing Director, L\'Élixir Organic (France)', content: 'We source Kashmiri Saffron and Wild Lavender Oil from Kashmiri Organic for our premium botanical skincare lines. The quality is exceptional, and their detailed laboratory reports and shipping logistics make B2B export extremely seamless.', rating: 5 }]),
+                ...(testimonials[1] ? [testimonials[1]] : [{ id: 2, name: 'Rajesh Malhotra', role: 'Founder, Himalaya Wellness Retreats', content: 'Our wellness sanctuaries utilize Kashmiri Organic forest honey and walnut woodware. Our guests frequently praise the purity of the honey. Truly the gold standard of organic heritage products.', rating: 5 }]),
+                ...(testimonials[2] ? [testimonials[2]] : [{ id: 3, name: 'Emma Wilson', role: 'Connoisseur & Naturalist (United Kingdom)', content: 'The hand-carved walnut fruit bowl is an absolute masterpiece in my dining room. Knowing the wood is sourced sustainably and helps support local Kashmiri craft families makes it feel incredibly special.', rating: 5 }]),
+              ].concat([
+                ...(testimonials[0] ? [testimonials[0]] : [{ id: 1, name: 'Clara Dupont', role: 'Sourcing Director, L\'Élixir Organic (France)', content: 'We source Kashmiri Saffron and Wild Lavender Oil from Kashmiri Organic for our premium botanical skincare lines. The quality is exceptional, and their detailed laboratory reports and shipping logistics make B2B export extremely seamless.', rating: 5 }]),
+                ...(testimonials[1] ? [testimonials[1]] : [{ id: 2, name: 'Rajesh Malhotra', role: 'Founder, Himalaya Wellness Retreats', content: 'Our wellness sanctuaries utilize Kashmiri Organic forest honey and walnut woodware. Our guests frequently praise the purity of the honey. Truly the gold standard of organic heritage products.', rating: 5 }]),
+                ...(testimonials[2] ? [testimonials[2]] : [{ id: 3, name: 'Emma Wilson', role: 'Connoisseur & Naturalist (United Kingdom)', content: 'The hand-carved walnut fruit bowl is an absolute masterpiece in my dining room. Knowing the wood is sourced sustainably and helps support local Kashmiri craft families makes it feel incredibly special.', rating: 5 }]),
+              ]).map((testCard, i) => (
+                <div 
+                  key={`row1-${testCard.id}-${i}`}
+                  className="w-[290px] sm:w-[380px] md:w-[440px] flex-shrink-0 mx-3 bg-bg-beige/10 p-6 sm:p-8 rounded-3xl border border-brand-green/5 luxury-shadow flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-1 text-brand-gold mb-4">
+                      {[...Array(testCard.rating || 5)].map((_, starIdx) => (
+                        <Star key={starIdx} className="w-4 h-4 fill-current animate-pulse" />
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed font-light italic mb-6">
+                      "{testCard.content}"
+                    </p>
                   </div>
                   
-                  <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-light italic mb-6">
-                    "{test.content}"
-                  </p>
-                </div>
-                
-                <div className="border-t border-brand-green/5 pt-4 mt-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-green text-brand-gold flex items-center justify-center font-serif text-sm font-bold shadow-inner shrink-0">
-                    {test.name[0]}
+                  <div className="border-t border-brand-green/5 pt-4 mt-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-green text-brand-gold flex items-center justify-center font-serif text-sm font-bold shadow-inner shrink-0">
+                      {testCard.name[0]}
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-brand-green">{testCard.name}</h4>
+                      <p className="text-[9px] sm:text-[10px] text-text-muted">{testCard.role}</p>
+                    </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Lower Row (Left Scroll) */}
+          <div className="w-full overflow-hidden">
+            <div className="animate-marquee-left py-2">
+              {[
+                { id: 4, name: 'Aarav Sharma', role: 'Owner, Vedic Spice Co. (Delhi)', content: 'The Grade A+ Pampore Saffron from Kashmiri Organic has elevated our premium spice catalog. Customers notice the intense aroma, deep crimson filaments, and colouring potency difference instantly.', rating: 5 },
+                { id: 5, name: 'Dr. Sofia Rossi', role: 'Chief Formulation Chemist, Bella Terra (Italy)', content: 'Finding pure, chemical-free essential oils with certified laboratory tracing is rare. Kashmiri Organic\'s wild lavender and rose distillates are of exceptional, clinical-grade quality.', rating: 5 },
+                { id: 6, name: 'Benjamin Croft', role: 'Executive Chef, The Royal Pavilion (London)', content: 'The wild organic forest honey possesses a distinct floral depth and velvety mouthfeel that is completely unmatched. It has become a signature ingredient in our pastry and tea service menus.', rating: 5 }
+              ].concat([
+                { id: 4, name: 'Aarav Sharma', role: 'Owner, Vedic Spice Co. (Delhi)', content: 'The Grade A+ Pampore Saffron from Kashmiri Organic has elevated our premium spice catalog. Customers notice the intense aroma, deep crimson filaments, and colouring potency difference instantly.', rating: 5 },
+                { id: 5, name: 'Dr. Sofia Rossi', role: 'Chief Formulation Chemist, Bella Terra (Italy)', content: 'Finding pure, chemical-free essential oils with certified laboratory tracing is rare. Kashmiri Organic\'s wild lavender and rose distillates are of exceptional, clinical-grade quality.', rating: 5 },
+                { id: 6, name: 'Benjamin Croft', role: 'Executive Chef, The Royal Pavilion (London)', content: 'The wild organic forest honey possesses a distinct floral depth and velvety mouthfeel that is completely unmatched. It has become a signature ingredient in our pastry and tea service menus.', rating: 5 }
+              ]).map((testCard, i) => (
+                <div 
+                  key={`row2-${testCard.id}-${i}`}
+                  className="w-[290px] sm:w-[380px] md:w-[440px] flex-shrink-0 mx-3 bg-bg-beige/10 p-6 sm:p-8 rounded-3xl border border-brand-green/5 luxury-shadow flex flex-col justify-between"
+                >
                   <div>
-                    <h4 className="text-sm font-bold text-brand-green">{test.name}</h4>
-                    <p className="text-[10px] text-text-muted">{test.role}</p>
+                    <div className="flex items-center gap-1 text-brand-gold mb-4">
+                      {[...Array(testCard.rating || 5)].map((_, starIdx) => (
+                        <Star key={starIdx} className="w-4 h-4 fill-current animate-pulse" />
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed font-light italic mb-6">
+                      "{testCard.content}"
+                    </p>
+                  </div>
+                  
+                  <div className="border-t border-brand-green/5 pt-4 mt-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-green text-brand-gold flex items-center justify-center font-serif text-sm font-bold shadow-inner shrink-0">
+                      {testCard.name[0]}
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-brand-green">{testCard.name}</h4>
+                      <p className="text-[9px] sm:text-[10px] text-text-muted">{testCard.role}</p>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
